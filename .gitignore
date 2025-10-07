@@ -1,0 +1,71 @@
+# ===============================
+# OS / System
+# ===============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# ===============================
+# IDE / Editor
+# ===============================
+.idea/
+.vscode/
+*.iml
+
+# ===============================
+# Flutter / Dart / Pub
+# ===============================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# ===============================
+# Platform Specific (exclude all)
+# ===============================
+# Android
+/android/
+
+# iOS
+/ios/
+
+# Web
+/web/
+
+# Windows
+/windows/
+
+# macOS
+/macos/
+
+# Linux
+/linux/
+
+# ===============================
+# Secrets / Config
+# ===============================
+.env
+*.keystore
+google-services.json
+GoogleService-Info.plist
+serviceAccountKey.json
+
+# ===============================
+# Logs / Temp / Backup
+# ===============================
+*.log
+*.tmp
+*.bak
+*.out
+*.swp

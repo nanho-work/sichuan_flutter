@@ -1,0 +1,46 @@
+name: sichuan_flutter
+description: "A classic Sichuan (Link Link) puzzle game built with Flutter and Flame."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 기본 Flutter & 유틸
+  cupertino_icons: ^1.0.8
+  url_launcher: ^6.3.2
+  provider: ^6.1.5+1
+  intl: ^0.20.2
+  shared_preferences: ^2.5.3
+
+  # 오디오 / 엔진 / 광고
+  audioplayers: ^6.5.1
+  flame: ^1.32.0
+  flame_audio: ^2.11.10
+  google_mobile_ads: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/sounds/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/icon.png"
