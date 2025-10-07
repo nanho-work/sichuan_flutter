@@ -18,6 +18,11 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.3
 
+  firebase_core: ^3.5.0
+  firebase_auth: ^5.3.0
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.2.0
+
   # 오디오 / 엔진 / 광고
   audioplayers: ^6.5.1
   flame: ^1.32.0
