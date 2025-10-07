@@ -95,7 +95,8 @@
 
 - `users.uid` ↔ `records.uid` : 1:N  
 - `records.stage_id` ↔ `stages.stage_id` : 1:N  
-- `users` ↔ `shop_items` : 구매 이력 확장 가능 (`purchases` 컬렉션)
+- `users.uid` ↔ `user_items.uid` : 1:N  
+- `user_items.item_id` ↔ `shop_items.item_id` : N:1  
 
 ---
 
@@ -106,5 +107,34 @@
 | `records (stage_id, score DESC)` | 스테이지별 랭킹 조회 |
 | `users (gold DESC)` | 상위 보유자 조회 |
 | `records (uid, stage_id)` | 유저별 진행도 조회 |
+| `user_items (uid, category)` | 유저별 아이템 카테고리 조회 |
+| `user_items (uid, equipped)` | 착용 중인 아이템 빠른 조회 |
 
 ---
+
+## 🎒 Collection: `user_items` (유저 보유 아이템)
+
+| 필드명 | 타입 | 설명 | 예시 |
+|--------|------|------|------|
+| `uid` | string | 사용자 UID (`users.uid` 참조) | `"8aYtL3sd..."` |
+| `item_id` | string | 상점 아이템 ID (`shop_items.item_id` 참조) | `"char_fox"` |
+| `category` | string | `"character"`, `"tile"`, `"background"` | `"character"` |
+| `owned_at` | timestamp | 구매 또는 획득 시간 | `"2025-10-07T13:20:00Z"` |
+| `equipped` | bool | 현재 장착 여부 | `true` |
+| `source` | string | `"shop"`, `"reward"`, `"event"` | `"shop"` |
+| `upgrade_level` | int | 강화/진화 단계 (옵션) | `1` |
+
+> 🔹 Firestore 구조 예시  
+> ```
+> users/
+>  └── 8aYtL3sd.../
+>       └── user_items/
+>            ├── char_fox/
+>            │    ├── category: "character"
+>            │    ├── equipped: true
+>            │    └── owned_at: 2025-10-07T13:20:00Z
+>            └── bg_forest/
+>                 ├── category: "background"
+>                 ├── equipped: false
+>                 └── owned_at: 2025-10-07T13:30:00Z
+> ```
