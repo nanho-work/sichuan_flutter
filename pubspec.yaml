@@ -18,34 +18,37 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.3
 
-  firebase_core: ^3.5.0
-  firebase_auth: ^5.3.0
-  cloud_firestore: ^5.4.4
-  firebase_storage: ^12.2.0
+  firebase_core: ^4.1.1
+  firebase_auth: ^6.1.0
+  cloud_firestore: ^6.0.2
+  firebase_storage: ^13.0.2
 
   # 오디오 / 엔진 / 광고
   audioplayers: ^6.5.1
   flame: ^1.32.0
   flame_audio: ^2.11.10
   google_mobile_ads: ^6.0.0
+  google_sign_in: 6.2.1
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
 
   assets:
+    - assets/
     - assets/images/
     - assets/icons/
-    - assets/sounds/
+    - assets/sounds/bgm/
+    - assets/sounds/sfx/
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/icon.png"
+  image_path: "assets/images/koofy_icon.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/icon.png"
+  adaptive_icon_foreground: "assets/images/koofy_icon.png"

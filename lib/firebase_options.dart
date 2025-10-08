@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyD94-hpsEeR-DJ96rnn3HSSHPKNuvkXfI8',
-    appId: '1:830768072229:android:50c95bf343d53c89dc61cc',
+    appId: '1:830768072229:android:0bde3930d4d77388dc61cc',
     messagingSenderId: '830768072229',
     projectId: 'sichuan-flutter-a93c6',
     storageBucket: 'sichuan-flutter-a93c6.firebasestorage.app',
@@ -66,10 +66,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDX6xu4TaBUrTVUS4DLXok_l7ZV94NkUY4',
-    appId: '1:830768072229:ios:51f171065f266572dc61cc',
+    appId: '1:830768072229:ios:cb3c1616d3f053dddc61cc',
     messagingSenderId: '830768072229',
     projectId: 'sichuan-flutter-a93c6',
     storageBucket: 'sichuan-flutter-a93c6.firebasestorage.app',
-    iosBundleId: 'com.example.sichuanFlutter',
+    iosBundleId: 'com.koofy.sichuan',
   );
+
 }
