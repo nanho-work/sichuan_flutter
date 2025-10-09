@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../managers/sound_manager.dart';
-import '../ui/volume_slider.dart';
-import '../ui/toggle_switch.dart';
-import '../ui/section_title.dart';
+import '../../ui/sound/volume_slider.dart';
+import '../../ui/sound/toggle_switch.dart';
+import '../../ui/sound/section_title.dart';
 
 class SoundSettingSection extends StatefulWidget {
   const SoundSettingSection({super.key});

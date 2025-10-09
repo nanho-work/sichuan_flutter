@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sichuan_flutter/ui/profiles/account_dialog.dart';
+import 'package:sichuan_flutter/managers/image_manager.dart';
+import '../../providers/user_provider.dart';
+import '../ui/energy/energy_header.dart'; // ✅ 추가
 
-/// ✅ AppHeader (게임 상단 바)
-/// 프로필, 에너지, 젬, 골드 정보를 표시
 class AppHeader extends StatelessWidget {
-  final String profileImage;
-  final int energy;
-  final int maxEnergy;
-  final int gems;
-  final int gold;
+  const AppHeader({super.key});
 
-  const AppHeader({
-    super.key,
-    required this.profileImage,
-    required this.energy,
-    required this.maxEnergy,
-    required this.gems,
-    required this.gold,
-  });
 
   @override
   Widget build(BuildContext context) {
+    final userModel = context.watch<UserProvider>().user;
+
+    if (userModel == null) {
+      return _loadingHeader();
+    }
+
+    final profileImage = 'char_default';
+    final gems = userModel.gems;
+    final gold = userModel.gold;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: const BoxDecoration(
@@ -38,66 +39,57 @@ class AppHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 첫 번째 줄 : 프로필 + 에너지 바
-          Row(
-            children: [
-              // 프로필 이미지
-              CircleAvatar(
-                radius: 22,
-                backgroundImage: AssetImage(profileImage),
-              ),
-              const SizedBox(width: 10),
-              // 에너지 표시
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Energy",
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                    Stack(
-                      children: [
-                        Container(
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[700],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        FractionallySizedBox(
-                          widthFactor:
-                              energy / maxEnergy.clamp(1, maxEnergy).toDouble(),
-                          child: Container(
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Colors.lightGreenAccent.shade400,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                "$energy / $maxEnergy",
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
 
-          // 두 번째 줄 : 젬 / 골드
+          const SizedBox(height: 15),
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _currencyIconText("💎", gems.toString(), Colors.cyanAccent),
-              const SizedBox(width: 12),
-              _currencyIconText("🪙", gold.toString(), Colors.amberAccent),
+              // 왼쪽: 프로필 + 에너지
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const AccountDialog(),
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: Image(
+                            image: ImageManager.instance
+                                .getImageProvider(itemId: profileImage),
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const EnergyHeader(),
+                    ],
+                  ),
+                ],
+              ),
+              const Spacer(),
+              // 오른쪽: 보석/골드
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      _currencyIconText(CurrencyType.gem, gems.toString()),
+                      const SizedBox(width: 12),
+                      _currencyIconText(CurrencyType.gold, gold.toString()),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ],
           ),
         ],
@@ -105,14 +97,26 @@ class AppHeader extends StatelessWidget {
     );
   }
 
-  /// 아이콘 + 텍스트 구성
-  Widget _currencyIconText(String emoji, String value, Color color) {
+  Widget _loadingHeader() => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF141E30), Color(0xFF243B55)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black26, blurRadius: 4, offset: Offset(0, 3)),
+          ],
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+
+  Widget _currencyIconText(CurrencyType type, String value) {
     return Row(
       children: [
-        Text(
-          emoji,
-          style: TextStyle(fontSize: 20, color: color),
-        ),
+        ImageManager.instance.getCurrencyIcon(type, size: 18),
         const SizedBox(width: 4),
         Text(
           value,

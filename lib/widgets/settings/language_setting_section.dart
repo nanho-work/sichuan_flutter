@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../ui/section_title.dart';
+import '../../ui/sound/section_title.dart';
 
 class LanguageSettingSection extends StatefulWidget {
   const LanguageSettingSection({super.key});

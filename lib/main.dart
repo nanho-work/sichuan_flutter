@@ -4,12 +4,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart'; // ✅ 추가
+import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'managers/sound_manager.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_layout.dart';
+import 'managers/image_manager.dart';
+import 'providers/user_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +34,14 @@ Future<void> main() async {
 
   final user = FirebaseAuth.instance.currentUser;
 
-  runApp(KoofyApp(isLoggedIn: user != null));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
+      ],
+      child: KoofyApp(isLoggedIn: user != null),
+    ),
+  );
 }
 
 class KoofyApp extends StatelessWidget {
@@ -65,6 +75,9 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ImageManager.instance.precacheAssets(context, itemIds: ['char_default', 'profile_placeholder']);
+    });
     _navigate();
   }
 

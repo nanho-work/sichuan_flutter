@@ -148,7 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    sound.stopBGM();
     super.dispose();
   }
 

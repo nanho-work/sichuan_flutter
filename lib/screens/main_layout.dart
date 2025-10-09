@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../managers/sound_manager.dart';
-import '../managers/ad_manager.dart'; // ✅ 광고 매니저 추가
+import '../ads/ad_banner.dart'; // ✅ 배너 광고 서비스
 import '../widgets/app_header.dart';  // ✅ 상단 헤더 추가
 import 'home_screen.dart';
 import 'store_screen.dart';
@@ -13,9 +13,8 @@ class MainLayout extends StatefulWidget {
   State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   final sound = SoundManager();
-  final ads = AdManager();
   int _currentIndex = 0;
 
   final _screens = const [
@@ -27,15 +26,35 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void initState() {
     super.initState();
-    sound.playBGM('home_theme.mp3'); // 홈 진입 BGM
-    ads.initAds(); // ✅ 광고 초기화
+    WidgetsBinding.instance.addObserver(this);
+    AdBannerService.loadBannerAd(
+      onLoaded: () => setState(() {}),
+      onFailed: (error) => debugPrint("Banner load failed: $error"),
+    );
+    if (!sound.isPlayingBGM) {
+      sound.playBGM('home_theme.mp3'); // ✅ 배경음 한 번만 실행
+    }
   }
 
   @override
   void dispose() {
-    sound.stopBGM();
-    ads.dispose(); // ✅ 광고 리소스 정리
+    WidgetsBinding.instance.removeObserver(this);
+    AdBannerService.dispose(); // 광고 리소스 정리
+    sound.stopBGM(); // BGM 정리
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      sound.pauseBGM();
+    } else if (state == AppLifecycleState.resumed) {
+      if (!sound.isPlayingBGM) {
+        sound.resumeBGM();
+      }
+    }
   }
 
   @override
@@ -44,14 +63,11 @@ class _MainLayoutState extends State<MainLayout> {
       backgroundColor: Colors.black, // 전체 배경 톤
       body: Column(
         children: [
+          // ✅ 하단 광고 배너 (위로 이동)
+          AdBannerService.bannerWidget(),
+
           // ✅ 상단 헤더
-          const AppHeader(
-            profileImage: 'assets/images/profile_default.png',
-            energy: 5,
-            maxEnergy: 7,
-            gems: 120,
-            gold: 8500,
-          ),
+          const AppHeader(),
 
           // ✅ 메인 화면 영역
           Expanded(
@@ -60,9 +76,6 @@ class _MainLayoutState extends State<MainLayout> {
               children: _screens,
             ),
           ),
-
-          // ✅ 하단 광고 배너
-          ads.bannerWidget(),
         ],
       ),
       bottomNavigationBar: NavigationBar(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/settings/settings_dialog.dart';
 import '../managers/sound_manager.dart';
-import '../ads/ad_banner.dart';
 import '../ads/ad_rewarded.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,23 +11,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final sound = SoundManager();
 
   @override
   void initState() {
     super.initState();
-    sound.playBGM('home_theme.mp3');
-    AdBannerService.loadBannerAd(
-      onLoaded: () => setState(() {}),
-      onFailed: (error) => debugPrint("Banner load failed: $error"),
-    );
     AdRewardedService.loadRewardedAd();
   }
 
   @override
   void dispose() {
-    AdBannerService.dispose();
-    sound.stopBGM();
     super.dispose();
   }
 
@@ -61,8 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: const Text("🎁 보상형 광고 보기"),
               ),
-              const Spacer(),
-              AdBannerService.bannerWidget(),
             ],
           ),
 

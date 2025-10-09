@@ -1,86 +1,44 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
-import 'firestore_service.dart';
+import 'user_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirestoreService _firestoreService = FirestoreService();
+  final UserService _userService = UserService();
 
   // =======================================================
-  // 🔹 현재 로그인 상태 스트림
+  // 🔹 로그인 상태 스트림
   // =======================================================
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   // =======================================================
-  // 🔹 현재 유저 UID
+  // 🔹 현재 UID
   // =======================================================
   String? get currentUid => _auth.currentUser?.uid;
-
-  // =======================================================
-  // 🔹 Firebase 유저 → UserModel 변환
-  // =======================================================
-  Future<UserModel> _userToModel(User user, {String loginType = 'google'}) async {
-    final exists = await _firestoreService.checkUserExists(user.uid);
-    if (!exists) {
-      final newUser = UserModel(
-        uid: user.uid,
-        nickname: user.displayName ?? "게스트",
-        email: user.email ?? "guest@koofy.games",
-        loginType: loginType,
-        gold: 100,
-        gems: 3,
-        energy: 7,
-        energyMax: 7,
-        createdAt: DateTime.now(),
-        lastLogin: DateTime.now(),
-      );
-      await _firestoreService.createUser(newUser);
-      return newUser;
-    } else {
-      await _firestoreService.updateUser(user.uid, {
-        'last_login': DateTime.now(),
-      });
-      final existing = await _firestoreService.getUser(user.uid);
-      return existing ?? UserModel(
-        uid: user.uid,
-        nickname: user.displayName ?? "게스트",
-        email: user.email ?? "guest@koofy.games",
-        loginType: loginType,
-        gold: 100,
-        gems: 3,
-        energy: 7,
-        energyMax: 7,
-        createdAt: DateTime.now(),
-        lastLogin: DateTime.now(),
-      );
-    }
-  }
 
   // =======================================================
   // 🔹 Google 로그인
   // =======================================================
   Future<UserModel?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn(
-        scopes: ['email', 'profile'],
-      ).signIn();
+      final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
-        accessToken: googleAuth.serverAuthCode,
+        accessToken: googleAuth.accessToken,
       );
 
       final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user;
       if (user == null) return null;
 
-      return await _userToModel(user, loginType: "google");
+      // ✅ Firestore 초기화
+      return await _userService.initializeUserData(user, loginType: 'google');
     } catch (e) {
-      print("Google 로그인 오류: $e");
+      print('❌ Google 로그인 오류: $e');
       return null;
     }
   }
@@ -94,69 +52,75 @@ class AuthService {
       final user = userCredential.user;
       if (user == null) return null;
 
-      return await _userToModel(user, loginType: "guest");
+      return await _userService.initializeUserData(user, loginType: 'guest');
     } catch (e) {
-      print("게스트 로그인 오류: $e");
+      print('❌ 게스트 로그인 오류: $e');
       return null;
     }
   }
 
   // =======================================================
-  // 🔹 게스트 계정을 구글 계정으로 연동
+  // 🔹 게스트 → 구글 계정 연동
   // =======================================================
   Future<UserModel?> linkGuestToGoogle() async {
     final user = _auth.currentUser;
     if (user == null || !user.isAnonymous) return null;
 
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn(
-        scopes: ['email', 'profile'],
-      ).signIn();
+      final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
-        accessToken: googleAuth.serverAuthCode,
+        accessToken: googleAuth.accessToken,
       );
 
       final linkedUserCredential = await user.linkWithCredential(credential);
       final linkedUser = linkedUserCredential.user;
       if (linkedUser == null) return null;
 
-      await _firestoreService.updateUser(linkedUser.uid, {
+      // 🔹 기존 유저 데이터 갱신
+      await _userService.updateUserData(linkedUser.uid, {
         'login_type': 'google',
+        'nickname': linkedUser.displayName ?? '사용자',
+        'email': linkedUser.email ?? 'unknown@koofy.games',
         'last_login': DateTime.now(),
       });
 
-      return await _userToModel(linkedUser, loginType: 'google');
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'credential-already-in-use') {
-        print('⚠️ 이미 구글 계정으로 가입된 유저입니다. 데이터 이관이 필요합니다.');
-      } else {
-        print('❌ 게스트 → 구글 연동 오류: $e');
-      }
-      return null;
+      return await _userService.getUserModel(linkedUser.uid);
     } catch (e) {
-      print('❌ 예외 발생: $e');
+      print('❌ 게스트 → 구글 연동 오류: $e');
       return null;
     }
   }
+
   // =======================================================
   // 🔹 로그아웃
   // =======================================================
   Future<void> signOut() async {
-    await _auth.signOut();
-    final googleSignIn = GoogleSignIn();
-    await googleSignIn.signOut();
+    try {
+      await _auth.signOut();
+      await GoogleSignIn().signOut();
+      print('✅ 로그아웃 완료');
+    } catch (e) {
+      print('❌ 로그아웃 실패: $e');
+    }
   }
 
   // =======================================================
-  // 🔹 현재 로그인 중인 유저 모델 반환
+  // 🔹 회원 탈퇴
   // =======================================================
-  Future<UserModel?> getCurrentUserModel() async {
-    final user = _auth.currentUser;
-    if (user == null) return null;
-    return await _firestoreService.getUser(user.uid);
+  Future<void> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      await _userService.deleteUserData(user.uid); // 🔹 Firestore 데이터 삭제
+      await user.delete(); // 🔹 Auth 계정 삭제
+      print('✅ 회원 탈퇴 완료');
+    } catch (e) {
+      print('❌ 회원 탈퇴 실패: $e');
+    }
   }
 }

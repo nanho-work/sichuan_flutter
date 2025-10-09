@@ -188,14 +188,20 @@
 
 ---
 
-## ⚡ Collection: energy_transactions (에너지 충전 로그)
+## ⚡ Subcollection: `energy_transactions` (유저별 에너지 충전 로그)
 
 | 필드명 | 타입 | 설명 | 예시 |
 |--------|------|------|------|
-| `uid` | string | 사용자 UID | `"8aYtL3sd..."` |
-| `type` | string | `"auto"`, `"ad"`, `"gem"` | `"ad"` |
+| `type` | string | `"auto"`, `"ad"`, `"gem"` — 충전 원인 | `"ad"` |
 | `amount` | int | 충전량 | `5` |
 | `created_at` | timestamp | 충전 발생 시각 | `"2025-10-07T14:00:00Z"` |
+| `note` | string | (optional) 추가 메모 | `"광고 시청 보상"` |
+
+> 🔹 유저별 하위 컬렉션으로 관리됨: `users/{uid}/energy_transactions`  
+> 🔹 `EnergyService`에서 자동 충전, 광고 보상, 젬 사용 충전 모두 이 컬렉션에 로그로 남김  
+> 🔹 `type`별로 통계 집계 가능 (`auto`=자동회복, `ad`=광고, `gem`=젬소모)
+
+---
 
 
 
