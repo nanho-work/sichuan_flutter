@@ -32,15 +32,11 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
 
     return Scaffold(
       backgroundColor: Colors.brown,
-      appBar: AppBar(
-        title: const Text("인벤토리"),
-        backgroundColor: Colors.brown.shade600,
-        centerTitle: true,
-      ),
+
       body: Column(
         children: [
           // 상단: 착용중 아이템 뷰
-          if (user != null) const EquippedItemView(),
+          const SizedBox(height: 240, child: EquippedItemView()),
 
           // 하단: 탭 구성
           Expanded(

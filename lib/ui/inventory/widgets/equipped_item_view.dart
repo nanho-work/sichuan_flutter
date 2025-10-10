@@ -35,6 +35,17 @@ class EquippedItemView extends StatelessWidget {
           ownedAt: DateTime.now(),
         ));
 
+    UserItemModel? equippedBlock =
+        inventory.firstWhere((i) => i.category == 'block_set' && i.equipped, orElse: () => UserItemModel(
+          uid: '',
+          itemId: '',
+          category: '',
+          equipped: false,
+          source: '',
+          upgradeLevel: 1,
+          ownedAt: DateTime.now(),
+        ));
+
     // 해당 아이템 정보 매칭
     ItemModel? charData = items.firstWhere(
       (i) => i.id == equippedCharacter.itemId,
@@ -66,6 +77,21 @@ class EquippedItemView extends StatelessWidget {
       ),
     );
 
+    ItemModel? blockData = items.firstWhere(
+      (i) => i.id == equippedBlock.itemId,
+      orElse: () => ItemModel(
+        id: 'default_block',
+        name: '기본 블록 세트',
+        category: ItemCategory.blockSet,
+        description: '',
+        rarity: ItemRarity.common,
+        currency: ItemCurrency.free,
+        available: true,
+        price: 0,
+        levels: const [],
+      ),
+    );
+
     return Container(
       height: 240,
       width: double.infinity,
@@ -73,50 +99,56 @@ class EquippedItemView extends StatelessWidget {
         image: bgData.images?.isNotEmpty == true
             ? DecorationImage(
                 image: AssetImage(bgData.images!.first),
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
               )
             : null,
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 캐릭터 이미지
-          if (charData.images?.isNotEmpty == true)
+          // 블록 세트 이미지
+          if (equippedBlock.equipped && blockData.thumbnails?.isNotEmpty == true)
             Positioned(
-              bottom: 0,
-              child: Image.asset(
-                charData.images!.first,
-                height: 160,
+              bottom: 150, // 캐릭터 위
+              child: Container(
+                height: 80,
+                child: Image.asset(
+                  blockData.thumbnails!.first, // ✅ 썸네일로 표시
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
-          // 버튼: 변경 / 해제
+          // 캐릭터 이미지 without gradient overlay and shadow
+          if (equippedCharacter.equipped && charData.imagePathForLevel(equippedCharacter.upgradeLevel).isNotEmpty)
+            Positioned(
+              bottom: 0,
+              child: Container(
+                height: 160,
+                child: Image.asset(
+                  charData.imagePathForLevel(equippedCharacter.upgradeLevel),
+                  height: 160,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          // 텍스트 오버레이
           Positioned(
             right: 12,
             top: 12,
-            child: Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    DefaultTabController.of(context)?.animateTo(0);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  ),
-                  child: const Text("변경"),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '착용 중 캐릭터: ${charData.name}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
                 ),
-                const SizedBox(height: 6),
-                ElevatedButton(
-                  onPressed: () {
-                    // 착용 해제 로직
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  ),
-                  child: const Text("해제"),
-                ),
-              ],
+              ),
             ),
           ),
         ],
