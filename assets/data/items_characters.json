@@ -1,0 +1,258 @@
+[
+  {
+    "id": "char_default",
+    "name": "루키",
+    "category": "character",
+    "description": "숲속 마을로 처음 발을 디딘 여행자 루키. 순수한 마음으로 모험을 시작하는 플레이어의 첫 동료이자, 앞으로의 모든 여정을 함께할 친구입니다.",
+    "rarity": "common",
+    "currency": "free",
+    "available": true,
+    "price": 0,
+    "levels": [
+      {
+        "level": 1,
+        "image_path": "assets/images/characters/char_default_lv1.png",
+        "effects": {
+          "time_limit_bonus": 0,
+          "hint_bonus": 0,
+          "bomb_bonus": 0,
+          "revive": 0,
+          "shuffle": 0,
+          "obstacle_remove": 0,
+          "gold_bonus": 0
+        }
+      },
+      {
+        "level": 2,
+        "image_path": "assets/images/characters/char_default_lv2.png",
+        "effects": {
+          "time_limit_bonus": 15,
+          "hint_bonus": 0,
+          "bomb_bonus": 0,
+          "revive": 0,
+          "shuffle": 0,
+          "obstacle_remove": 0,
+          "gold_bonus": 0
+        }
+      },
+      {
+        "level": 3,
+        "image_path": "assets/images/characters/char_default_lv3.png",
+        "effects": {
+          "time_limit_bonus": 15,
+          "hint_bonus": 0,
+          "bomb_bonus": 0,
+          "revive": 0,
+          "shuffle": 0,
+          "obstacle_remove": 0,
+          "gold_bonus": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_koofy",
+    "name": "쿠피",
+    "category": "character",
+    "set_id": "set_koofy",
+    "description": "밝고 명랑한 숲속의 주인공 쿠피! 언제나 웃음을 잃지 않고 동료들을 이끌며 새로운 길을 개척하는 진정한 탐험가입니다.",
+    "rarity": "common",
+    "currency": "gold",
+    "available": true,
+    "price": 3000,
+    "levels": [
+      {
+        "level": 1,
+        "image_path": "assets/images/characters/char_koofy_lv1.png",
+        "effects": {
+          "time_limit_bonus": 8,
+          "hint_bonus": 1,
+          "gold_bonus": 2
+        }
+      },
+      {
+        "level": 2,
+        "image_path": "assets/images/characters/char_koofy_lv2.png",
+        "effects": {
+          "time_limit_bonus": 10,
+          "hint_bonus": 2,
+          "gold_bonus": 2.4
+        }
+      },
+      {
+        "level": 3,
+        "image_path": "assets/images/characters/char_koofy_lv3.png",
+        "effects": {
+          "time_limit_bonus": 12,
+          "hint_bonus": 3,
+          "revive": 1,
+          "gold_bonus": 2.9
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_bori",
+    "name": "보리",
+    "category": "character",
+    "set_id": "set_bori",
+    "description": "느긋하지만 강한 힘을 지닌 수호자 보리. 위기 때마다 친구들을 지켜주는 묵직한 믿음의 존재로, 숲속의 든든한 방패입니다.",
+    "rarity": "rare",
+    "currency": "gold",
+    "available": true,
+    "price": 5000,
+    "levels": [
+      {
+        "level": 1,
+        "image_path": "assets/images/characters/char_bori_lv1.png",
+        "effects": {
+          "time_limit_bonus": 10,
+          "bomb_bonus": 2,
+          "gold_bonus": 1
+        }
+      },
+      {
+        "level": 2,
+        "image_path": "assets/images/characters/char_bori_lv2.png",
+        "effects": {
+          "time_limit_bonus": 12,
+          "bomb_bonus": 3,
+          "gold_bonus": 1.2
+        }
+      },
+      {
+        "level": 3,
+        "image_path": "assets/images/characters/char_bori_lv3.png",
+        "effects": {
+          "time_limit_bonus": 14,
+          "bomb_bonus": 4,
+          "shuffle": 1,
+          "gold_bonus": 1.4
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_toko",
+    "name": "토코",
+    "category": "character",
+    "set_id": "set_toko",
+    "description": "호기심 많은 다람쥐 탐험가 토코! 항상 새로운 것을 찾아 숲속을 누비며, 숨겨진 비밀을 밝히는 모험심 넘치는 탐험가입니다.",
+    "rarity": "rare",
+    "currency": "gem",
+    "available": true,
+    "price": 800,
+    "levels": [
+      {
+        "level": 1,
+        "image_path": "assets/images/characters/char_toko_lv1.png",
+        "effects": {
+          "time_limit_bonus": 6,
+          "shuffle": 1,
+          "gold_bonus": 3
+        }
+      },
+      {
+        "level": 2,
+        "image_path": "assets/images/characters/char_toko_lv2.png",
+        "effects": {
+          "time_limit_bonus": 7.2,
+          "shuffle": 2,
+          "gold_bonus": 3.6
+        }
+      },
+      {
+        "level": 3,
+        "image_path": "assets/images/characters/char_toko_lv3.png",
+        "effects": {
+          "time_limit_bonus": 8.6,
+          "shuffle": 3,
+          "obstacle_remove": 1,
+          "gold_bonus": 4.3
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_luma",
+    "name": "루마",
+    "category": "character",
+    "set_id": "set_luma",
+    "description": "날렵하고 지혜로운 여우 루마. 마법과 지식을 통해 숲의 균형을 지키며, 위험에 빠진 친구들을 구하는 숲의 대마법사입니다.",
+    "rarity": "epic",
+    "currency": "gem",
+    "available": true,
+    "price": 1200,
+    "levels": [
+      {
+        "level": 1,
+        "image_path": "assets/images/characters/char_luma_lv1.png",
+        "effects": {
+          "time_limit_bonus": 12,
+          "obstacle_remove": 1,
+          "gold_bonus": 1
+        }
+      },
+      {
+        "level": 2,
+        "image_path": "assets/images/characters/char_luma_lv2.png",
+        "effects": {
+          "time_limit_bonus": 14,
+          "obstacle_remove": 2,
+          "gold_bonus": 1.2
+        }
+      },
+      {
+        "level": 3,
+        "image_path": "assets/images/characters/char_luma_lv3.png",
+        "effects": {
+          "time_limit_bonus": 16,
+          "obstacle_remove": 3,
+          "revive": 1,
+          "gold_bonus": 1.4
+        }
+      }
+    ]
+  },
+  {
+    "id": "char_momo",
+    "name": "모모",
+    "category": "character",
+    "set_id": "set_momo",
+    "description": "귀엽고 차분한 팬더 모모. 깊은 집중력으로 전투의 흐름을 바꾸는 전략가이자, 평온함 속에 숨겨진 놀라운 힘의 주인공입니다.",
+    "rarity": "epic",
+    "currency": "gem",
+    "available": true,
+    "price": 2000,
+    "levels": [
+      {
+        "level": 1,
+        "image_path": "assets/images/characters/char_momo_lv1.png",
+        "effects": {
+          "time_limit_bonus": 9,
+          "revive": 1,
+          "gold_bonus": 2
+        }
+      },
+      {
+        "level": 2,
+        "image_path": "assets/images/characters/char_momo_lv2.png",
+        "effects": {
+          "time_limit_bonus": 10.8,
+          "revive": 2,
+          "gold_bonus": 2.4
+        }
+      },
+      {
+        "level": 3,
+        "image_path": "assets/images/characters/char_momo_lv3.png",
+        "effects": {
+          "time_limit_bonus": 12.9,
+          "revive": 3,
+          "bomb_bonus": 1,
+          "gold_bonus": 2.9
+        }
+      }
+    ]
+  }
+]

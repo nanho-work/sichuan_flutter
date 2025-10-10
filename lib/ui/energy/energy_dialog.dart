@@ -110,172 +110,194 @@ class _EnergyDialogState extends State<EnergyDialog> {
     }
 
     return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(4),
+      constraints: const BoxConstraints(minHeight: 400, maxHeight: 600),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: const Color(0xFF1C2331),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: ImageManager.instance.getDialogBackground(DialogType.energy).image,
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(50, 33, 50, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ImageManager.instance.getCurrencyIcon(CurrencyType.energy, size: 28),
                 const SizedBox(width: 8),
                 const Text(
-                  "에너지 충전",
+                  "충전",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black87,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+
 
             Image.asset(
               'assets/images/koofy_carrot_refill.png',
-              width: 80,
-              height: 80,
+              width: 100,
+              height: 120,
               fit: BoxFit.contain,
             ),
 
             // (에너지 상태 및 다음 충전까지 표시 영역 삭제됨)
 
-            const SizedBox(height: 20),
-            const Divider(color: Colors.white24),
-
-            // 무료 충전 섹션 제목
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Text(
-                  "무료 충전",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-
-            // 🎁 광고로 충전 버튼 (wood background)
-            ElevatedButton(
-              onPressed: _isProcessing ? null : _onWatchAd,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-                padding: EdgeInsets.zero,
-                elevation: 0,
-                shadowColor: Colors.transparent,
-                backgroundColor: Colors.transparent,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: ImageManager.instance.getButtonImage(ButtonType.wood).image,
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                alignment: Alignment.center,
-                height: 48,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/koofy_watch_ad.png',
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "광고 시청으로 +5 충전",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+ 
+           
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _isProcessing ? null : _onWatchAd,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                          padding: EdgeInsets.zero,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: ImageManager.instance.getButtonImage(ButtonType.wood).image,
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          height: 70,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/images/koofy_watch_ad.png',
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.contain,
+                              ),
+                              const Text(
+                                "+5 당근",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // 프리미엄 충전 섹션 제목
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Text(
-                  "프리미엄 충전",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-
-            // 💎 젬으로 충전 버튼 (wood background)
-            ElevatedButton(
-              onPressed: _isProcessing ? null : _onUseGems,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-                padding: EdgeInsets.zero,
-                elevation: 0,
-                shadowColor: Colors.transparent,
-                backgroundColor: Colors.transparent,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: ImageManager.instance.getButtonImage(ButtonType.wood).image,
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                alignment: Alignment.center,
-                height: 48,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/koofy_gem_offer.png',
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "젬 10개 사용으로 +5 충전 (보유: $_gems)",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                      const SizedBox(height: 2),
+                      const Text(
+                        "광고 충전",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+                
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _isProcessing ? null : _onUseGems,
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                          padding: EdgeInsets.zero,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          backgroundColor: Colors.transparent,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: ImageManager.instance.getButtonImage(ButtonType.wood).image,
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          height: 70,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/images/koofy_gem_offer.png',
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.contain,
+                              ),
+                              const Text(
+                                "+5 당근",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        "루비 충전",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 16),
+            const SizedBox(height: 2),
 
             // 닫기 버튼
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "닫기",
-                style: TextStyle(color: Colors.white70),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black54, width: 1.2),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 3,
+                      offset: Offset(1, 1),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  "닫기",
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

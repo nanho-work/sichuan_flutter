@@ -3,6 +3,19 @@ import 'package:flutter/widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
+/// DialogType enum for different dialog background assets
+enum DialogType { energy }
+
+extension DialogTypePath on DialogType {
+  String get assetPath {
+    switch (this) {
+      case DialogType.energy:
+        return 'assets/images/dialogs/dialog_bg_energy.png';
+    }
+  }
+}
+
+
 
 /// ButtonType enum for different button assets
 enum ButtonType { wood }
@@ -157,5 +170,10 @@ class ImageManager {
   /// Returns a button Image widget for the given ButtonType.
   Image getButtonImage(ButtonType type, {double size = 40}) {
     return Image.asset(type.assetPath, width: size, height: size);
+  }
+
+  /// Returns a dialog background Image widget for the given DialogType.
+  Image getDialogBackground(DialogType type, {BoxFit fit = BoxFit.cover}) {
+    return Image.asset(type.assetPath, fit: fit);
   }
 }

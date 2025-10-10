@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart'; // for kIsWeb
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +14,14 @@ import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_layout.dart';
 import 'managers/image_manager.dart';
-import 'providers/user_provider.dart';
+
+// 프로바이더 임포트
+import 'package:sichuan_flutter/providers/user_provider.dart';
+import 'package:sichuan_flutter/providers/item_provider.dart';
+import 'package:sichuan_flutter/providers/inventory_provider.dart';
+
+
+import 'package:sichuan_flutter/utils/firestore_importer.dart'; // 아이템 데이터 등록용
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +29,14 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await MobileAds.instance.initialize(); // ✅ AdMob 초기화
+  // ✅ AdMob 초기화 (웹에서는 무시)
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    await MobileAds.instance.initialize();
+  }
+
+  // await importItemsFromJson(); // 제이슨 아이템 등록 , 등록후 주석처리 할 것.
+  // await importItemSetsFromJson(); // 제이슨 아이템 등록 , 등록후 주석처리 할 것.
+
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -38,6 +54,8 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
+        ChangeNotifierProvider(create: (_) => ItemProvider()),
+        ChangeNotifierProvider(create: (_) => InventoryProvider()..loadInventory()),
       ],
       child: KoofyApp(isLoggedIn: user != null),
     ),

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "block_fruit",
+    "name": "과일 블록 셋트",
+    "category": "block_set",
+    "description": "상큼한 과일로 꾸며진 블록 셋트! 플레이 화면을 달콤하게 만들어줍니다.",
+    "rarity": "common",
+    "currency": "gold",
+    "available": true,
+    "price": 0,
+    "count": 25,
+    "set_id": "set_koofy",
+    "asset_path_prefix": "assets/icons/fruit/",
+    "thumbnails": [
+      "assets/icons/fruit/fruit_01.png",
+      "assets/icons/fruit/fruit_02.png",
+      "assets/icons/fruit/fruit_03.png"
+    ],
+    "images": [
+      "assets/icons/fruit/fruit_01.png",
+      "assets/icons/fruit/fruit_02.png",
+      "assets/icons/fruit/fruit_03.png",
+      "assets/icons/fruit/fruit_04.png",
+      "assets/icons/fruit/fruit_05.png",
+      "assets/icons/fruit/fruit_06.png",
+      "assets/icons/fruit/fruit_07.png",
+      "assets/icons/fruit/fruit_08.png",
+      "assets/icons/fruit/fruit_09.png",
+      "assets/icons/fruit/fruit_10.png",
+      "assets/icons/fruit/fruit_11.png",
+      "assets/icons/fruit/fruit_12.png",
+      "assets/icons/fruit/fruit_13.png",
+      "assets/icons/fruit/fruit_14.png",
+      "assets/icons/fruit/fruit_15.png",
+      "assets/icons/fruit/fruit_16.png",
+      "assets/icons/fruit/fruit_17.png",
+      "assets/icons/fruit/fruit_18.png",
+      "assets/icons/fruit/fruit_19.png",
+      "assets/icons/fruit/fruit_20.png",
+      "assets/icons/fruit/fruit_21.png",
+      "assets/icons/fruit/fruit_22.png",
+      "assets/icons/fruit/fruit_23.png",
+      "assets/icons/fruit/fruit_24.png",
+      "assets/icons/fruit/fruit_25.png"
+    ]
+  }
+]

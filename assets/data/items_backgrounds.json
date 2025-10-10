@@ -1,0 +1,85 @@
+[
+  {
+    "id": "bg_basic",
+    "name": "기본 초원 배경",
+    "category": "background",
+    "description": "푸른 초원과 맑은 하늘이 펼쳐진 기본 배경입니다. 루키 전용 기본 테마입니다.",
+    "rarity": "common",
+    "currency": "free",
+    "available": true,
+    "price": 0,
+    "images": [
+      "assets/images/backgrounds/bg_basic_01.png"
+    ]
+  },
+  {
+    "id": "bg_desert",
+    "name": "사막 탐험 배경",
+    "category": "background",
+    "description": "끝없이 펼쳐진 사막과 푸른 하늘이 탐험의 열정을 자극합니다.",
+    "rarity": "rare",
+    "currency": "gold",
+    "available": true,
+    "price": 500,
+    "set_id": "set_koofy",
+    "images": [
+      "assets/images/backgrounds/bg_desert_02.png"
+    ]
+  },
+  {
+    "id": "bg_battlefield",
+    "name": "전장의 황혼",
+    "category": "background",
+    "description": "붉은 석양이 전장을 물들이는 용맹한 전사의 무대입니다.",
+    "rarity": "epic",
+    "currency": "gold",
+    "available": true,
+    "price": 800,
+    "set_id": "set_bori",
+    "images": [
+      "assets/images/backgrounds/bg_battlefield_01.png"
+    ]
+  },
+  {
+    "id": "bg_market",
+    "name": "황금 시장 거리",
+    "category": "background",
+    "description": "황금빛 햇살이 비치는 상점가, 상인 토코의 전용 무대입니다.",
+    "rarity": "rare",
+    "currency": "gold",
+    "available": true,
+    "price": 600,
+    "set_id": "set_toko",
+    "images": [
+      "assets/images/backgrounds/bg_market_01.png"
+    ]
+  },
+  {
+    "id": "bg_forest",
+    "name": "마법의 숲",
+    "category": "background",
+    "description": "빛나는 버섯과 신비로운 안개로 가득한 마법사 루마의 숲입니다.",
+    "rarity": "epic",
+    "currency": "gem",
+    "available": true,
+    "price": 120,
+    "set_id": "set_luma",
+    "images": [
+      "assets/images/backgrounds/forest/bg_forest_01.png"
+    ]
+  },
+  {
+    "id": "bg_temple",
+    "name": "산사 정원",
+    "category": "background",
+    "description": "고요한 산사에 바람이 흐르는 수도사 모모의 평온한 정원입니다.",
+    "rarity": "epic",
+    "currency": "gem",
+    "available": true,
+    "price": 150,
+    "set_id": "set_momo",
+    "images": [
+      "assets/images/backgrounds/temple/bg_temple_01.png"
+    ]
+  }
+]
