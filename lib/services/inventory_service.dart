@@ -1,9 +1,11 @@
 // =======================================================
-// 🎒 인벤토리 서비스 (UserItemModel 기반)
-// Firestore에서 유저 인벤토리 데이터를 관리합니다.
+// 🎒 InventoryService — 유저 인벤토리 관리 (UserItemModel 기반)
+// -------------------------------------------------------
+// - 구매/획득/장착/강화 등 처리
 // =======================================================
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_item_model.dart';
+import '../models/item_model.dart';
 
 class InventoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -35,14 +37,13 @@ class InventoryService {
   }
 
   // =======================================================
-  // 🔹 아이템 추가 (구매/획득)
+  // 🔹 아이템 추가 (획득)
   // =======================================================
   Future<void> addItem(String uid, UserItemModel userItem) async {
     final ref = _itemDocRef(uid, userItem.itemId);
     final doc = await ref.get();
 
     if (doc.exists) {
-      // 이미 있으면 그대로 두거나 로직 추가 가능
       await ref.update({'owned_at': DateTime.now()});
     } else {
       await ref.set(userItem.toMap());
@@ -55,6 +56,47 @@ class InventoryService {
   Future<void> setEquipped(String uid, String itemId, bool equipped) async {
     final ref = _itemDocRef(uid, itemId);
     await ref.update({'equipped': equipped});
+  }
+
+  // =======================================================
+  // 🔹 구매 (골드/젬 차감 + 인벤토리 추가)
+  // =======================================================
+  Future<void> purchaseItemWithCurrency(String uid, ItemModel item) async {
+    final userRef = _firestore.collection('users').doc(uid);
+    final inventoryRef = _userItemsRef(uid).doc(item.id);
+
+    await _firestore.runTransaction((transaction) async {
+      final userSnap = await transaction.get(userRef);
+      final currentGold = userSnap['gold'] as int;
+      final currentGems = userSnap['gems'] as int;
+
+      // 이미 보유 중인지 확인
+      final owned = await _itemDocRef(uid, item.id).get();
+      if (owned.exists) throw Exception('이미 보유한 아이템입니다.');
+
+      // 통화 유형에 따른 차감 처리
+      if (item.currency == ItemCurrency.gold && currentGold < item.price) {
+        throw Exception('도토리가 부족합니다.');
+      } else if (item.currency == ItemCurrency.gem && currentGems < item.price) {
+        throw Exception('젬이 부족합니다.');
+      }
+
+      if (item.currency == ItemCurrency.gold) {
+        transaction.update(userRef, {'gold': currentGold - item.price});
+      } else if (item.currency == ItemCurrency.gem) {
+        transaction.update(userRef, {'gems': currentGems - item.price});
+      }
+
+      // 인벤토리에 아이템 추가
+      transaction.set(inventoryRef, {
+        'item_id': item.id,
+        'category': item.category.value,
+        'equipped': false,
+        'source': 'shop',
+        'upgrade_level': 1,
+        'owned_at': DateTime.now(),
+      });
+    });
   }
 
   // =======================================================

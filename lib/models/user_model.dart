@@ -17,6 +17,8 @@ class UserModel {
   final int bombs;
   final int shuffle;
   final int currentStage;
+  final int adEnergyCount;
+  final DateTime? adEnergyDate;
 
   UserModel({
     required this.uid,
@@ -34,6 +36,8 @@ class UserModel {
     required this.bombs,
     required this.shuffle,
     required this.currentStage,
+    this.adEnergyCount = 0,
+    this.adEnergyDate,
   });
 
   factory UserModel.fromDoc(DocumentSnapshot doc) {
@@ -54,6 +58,10 @@ class UserModel {
       bombs: data['bombs'] ?? 0,
       shuffle: data['shuffle'] ?? 0,
       currentStage: data['current_stage'] ?? 1,
+      adEnergyCount: data['ad_energy_count'] ?? 0,
+      adEnergyDate: (data['ad_energy_date'] is Timestamp)
+          ? (data['ad_energy_date'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -80,6 +88,10 @@ class UserModel {
       bombs: data['bombs'] ?? 0,
       shuffle: data['shuffle'] ?? 0,
       currentStage: data['current_stage'] ?? 1,
+      adEnergyCount: data['ad_energy_count'] ?? 0,
+      adEnergyDate: (data['ad_energy_date'] is Timestamp)
+          ? (data['ad_energy_date'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -100,6 +112,8 @@ class UserModel {
       'bombs': bombs,
       'shuffle': shuffle,
       'current_stage': currentStage,
+      'ad_energy_count': adEnergyCount,
+      'ad_energy_date': adEnergyDate?.toIso8601String(),
     };
   }
 
@@ -126,6 +140,15 @@ class UserModel {
       bombs: changes['bombs'] ?? bombs,
       shuffle: changes['shuffle'] ?? shuffle,
       currentStage: changes['current_stage'] ?? currentStage,
+      adEnergyCount: changes['ad_energy_count'] ?? adEnergyCount,
+      adEnergyDate: changes['ad_energy_date'] ?? adEnergyDate,
     );
   }
+    bool get adLimitReached {
+      if (adEnergyDate == null) return false;
+      final now = DateTime.now();
+      final d = adEnergyDate!;
+      final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
+      return isToday && adEnergyCount >= 3;
+    }
 }

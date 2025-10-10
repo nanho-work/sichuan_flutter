@@ -20,8 +20,10 @@ import 'package:sichuan_flutter/providers/user_provider.dart';
 import 'package:sichuan_flutter/providers/item_provider.dart';
 import 'package:sichuan_flutter/providers/inventory_provider.dart';
 
-
 import 'package:sichuan_flutter/utils/firestore_importer.dart'; // 아이템 데이터 등록용
+
+// ✅ 전역 navigatorKey 추가 (Provider 외부 접근용)
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +31,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   // ✅ AdMob 초기화 (웹에서는 무시)
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     await MobileAds.instance.initialize();
@@ -36,7 +39,6 @@ Future<void> main() async {
 
   // await importItemsFromJson(); // 제이슨 아이템 등록 , 등록후 주석처리 할 것.
   // await importItemSetsFromJson(); // 제이슨 아이템 등록 , 등록후 주석처리 할 것.
-
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -68,13 +70,14 @@ class KoofyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The app runs in full-screen mode with no AppBar or title UI.
+    // ✅ navigatorKey를 MaterialApp에 연결
     return MaterialApp(
       title: 'Koofy Sichuan',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
         useMaterial3: true,
       ),
+      navigatorKey: navigatorKey, // ✅ 전역 네비게이터 등록 (중요!)
       home: SplashScreenWrapper(isLoggedIn: isLoggedIn),
       debugShowCheckedModeBanner: false,
     );

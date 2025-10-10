@@ -1,11 +1,10 @@
+// =======================================================
+// 🛒 ItemService
+// Firestore의 "items" 컬렉션 관리 (상점 데이터 전용)
+// =======================================================
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/item_model.dart';
 
-/// ItemService
-/// ------------------------------------------------------------
-/// Firestore의 "items" 컬렉션에 접근하여 아이템(캐릭터 등)을
-/// 불러오거나, 단일 조회, 필터 조회 등을 담당하는 서비스 계층.
-/// UI 상태는 전혀 관리하지 않고, 데이터 접근 전용 역할.
 class ItemService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -54,23 +53,5 @@ class ItemService {
   /// ✅ Firestore 삭제 (관리자용)
   Future<void> deleteItem(String id) async {
     await _db.collection('items').doc(id).delete();
-  }
-  /// 구매: 사용자의 인벤토리에 아이템 추가 (이미 소유한 경우 무시)
-  Future<void> purchaseItem({required String userId, required ItemModel item}) async {
-    final userRef = _db.collection('users').doc(userId);
-    final inventoryRef = userRef.collection('inventory').doc(item.id);
-    await _db.runTransaction((transaction) async {
-      final inventorySnap = await transaction.get(inventoryRef);
-      if (!inventorySnap.exists) {
-        transaction.set(inventoryRef, {
-          'item_id': item.id,
-          'category': item.category,
-          'name': item.name,
-          'acquired_at': FieldValue.serverTimestamp(),
-          'level': 1,
-          'owned': true,
-        });
-      }
-    });
   }
 }

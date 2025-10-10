@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/item_model.dart';
-import '../../../providers/item_provider.dart';
 import '../../../managers/image_manager.dart';
+import '../../../providers/inventory_provider.dart';
 import 'widgets/wood_button.dart';
 import 'widgets/outlined_button.dart';
+import '../../../models/item_model.dart';
 
 class BlocksetDetailDialog extends StatefulWidget {
   const BlocksetDetailDialog({super.key, required this.item});
@@ -112,22 +112,11 @@ class _BlocksetDetailDialogState extends State<BlocksetDetailDialog>
                 Row(
                   children: [
                     Expanded(
-                      child: WoodButton(
-                        onTap: () async {
-                          await context.read<ItemProvider>().purchaseItem(widget.item);
-                          await _closeDialog();
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (price > 0)
-                              (currency == 'gold')
-                                  ? ImageManager.instance.getCurrencyIcon(CurrencyType.gold, size: 24)
-                                  : ImageManager.instance.getCurrencyIcon(CurrencyType.gem, size: 24),
-                            Text(price > 0 ? '  $price' : '무료 획득',
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
+                      child: _PurchaseButton(
+                        item: widget.item,
+                        price: price,
+                        currency: currency,
+                        onPurchased: _closeDialog,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -143,6 +132,119 @@ class _BlocksetDetailDialogState extends State<BlocksetDetailDialog>
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PurchaseButton extends StatefulWidget {
+  const _PurchaseButton({
+    required this.item,
+    required this.price,
+    required this.currency,
+    required this.onPurchased,
+  });
+
+  final dynamic item;
+  final int price;
+  final String currency;
+  final Future<void> Function() onPurchased;
+
+  @override
+  State<_PurchaseButton> createState() => _PurchaseButtonState();
+}
+
+class _PurchaseButtonState extends State<_PurchaseButton> {
+  bool _isLoading = false;
+
+  bool get _isOwned {
+    final inventory = context.read<InventoryProvider>().inventory;
+    if (widget.price == 0) return false;
+    return inventory.any((invItem) => invItem.itemId == widget.item.id);
+  }
+
+  Future<void> _handlePurchase() async {
+    if (_isOwned) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('이미 보유중인 아이템입니다.')),
+      );
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      await context.read<InventoryProvider>().purchaseItem(widget.item);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('구매가 완료되었습니다.')),
+        );
+        await widget.onPurchased();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('구매 실패: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final inventory = context.watch<InventoryProvider>();
+    final isOwned = inventory.hasItem(widget.item.id);
+
+    if (_isLoading) {
+      return Container(
+        height: 48,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
+      );
+    }
+
+    if (isOwned) {
+      return Opacity(
+        opacity: 0.6,
+        child: IgnorePointer(
+          ignoring: true,
+          child: WoodButton(
+            onTap: () {},
+            child: const Text("보유중", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+      );
+    }
+
+    return WoodButton(
+      onTap: () async {
+        setState(() => _isLoading = true);
+        try {
+          final message = await context.read<InventoryProvider>().purchaseItem(widget.item);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+            if (message.contains("완료")) {
+              await widget.onPurchased();
+            }
+          }
+        } finally {
+          if (mounted) setState(() => _isLoading = false);
+        }
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (widget.price > 0)
+            (widget.currency == 'gold')
+                ? ImageManager.instance.getCurrencyIcon(CurrencyType.gold, size: 24)
+                : ImageManager.instance.getCurrencyIcon(CurrencyType.gem, size: 24),
+          Text(
+            widget.price > 0 ? '  ${widget.price}' : '무료 획득',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }

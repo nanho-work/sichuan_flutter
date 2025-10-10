@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
 import '../screens/store_screen.dart';
-import '../screens/inventory_screen_screen.dart';
+import '../screens/inventory_screen.dart';
+import '../screens/dungeon_screen.dart';
+import '../screens/boss_battle_screen.dart';
 import '../models/user_model.dart';
 
 class BottomNav extends StatefulWidget {
-  final UserModel userModel;
-  const BottomNav({super.key, required this.userModel});
+  const BottomNav({super.key});
 
   @override
   State<BottomNav> createState() => _BottomNavState();
 }
 
 class _BottomNavState extends State<BottomNav> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2; // 초기값 홈
 
-  // 화면 리스트 (현재 홈만 활성화)
+  // ✅ 화면 리스트 (5개 탭 구성)
   late final List<Widget> _screens = [
-    const HomeScreen(),
-    const StoreScreen(),
-    const Inventory_screenScreen(),
+    const StoreScreen(),        // 0
+    const InventoryScreen(),    // 1
+    const HomeScreen(),         // 2
+    const DungeonScreen(),      // 3
+    const BossBattleScreen(),   // 4
   ];
 
   void _onItemTapped(int index) {
@@ -36,21 +39,29 @@ class _BottomNavState extends State<BottomNav> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade900,
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
         items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.store),
+            label: '상점',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory),
+            label: '인벤토리',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.storefront),
-            label: '상점',
+            icon: Icon(Icons.casino),
+            label: '던전',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.face_retouching_natural),
-            label: '캐릭터',
+            icon: Icon(Icons.shield),
+            label: '수호자 토벌',
           ),
         ],
       ),

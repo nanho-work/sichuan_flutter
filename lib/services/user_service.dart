@@ -150,18 +150,48 @@ class UserService {
     });
   }
 
-  // 2️⃣ 광고로 충전 (+5)
+  // =======================================================
+  // 🔹 광고로 충전 (+5, 일일 3회 제한 포함)
+  // =======================================================
   Future<void> restoreEnergyViaAd(String uid) async {
     final ref = _db.collection('users').doc(uid);
+
     await _db.runTransaction((t) async {
       final snapshot = await t.get(ref);
-      final current = snapshot['energy'] as int;
-      final max = snapshot['energy_max'] as int;
-      final newEnergy = (current + 5).clamp(0, max);
+      final data = snapshot.data() ?? {};
+
+      final currentEnergy = (data['energy'] ?? 0) as int;
+      final maxEnergy = (data['energy_max'] ?? 7) as int;
+
+      // ✅ 일일 광고 제한 체크
+      final ts = data['ad_energy_date'] as Timestamp?;
+      final lastDate = ts?.toDate();
+      final now = DateTime.now();
+      bool isSameDay = lastDate != null &&
+          lastDate.year == now.year &&
+          lastDate.month == now.month &&
+          lastDate.day == now.day;
+      final usedCount = isSameDay ? (data['ad_energy_count'] ?? 0) : 0;
+
+      if (usedCount >= 3) {
+        throw Exception('오늘의 광고 충전 횟수를 모두 사용했습니다.');
+      }
+
+      // ✅ 에너지가 이미 풀인 경우
+      if (currentEnergy >= maxEnergy) {
+        throw Exception('에너지가 이미 가득 찼습니다.');
+      }
+
+      // ✅ 에너지 충전
+      final newEnergy = (currentEnergy + 5).clamp(0, maxEnergy);
       t.update(ref, {
         'energy': newEnergy,
         'energy_last_refill': DateTime.now(),
+        'ad_energy_date': now,
+        'ad_energy_count': usedCount + 1,
       });
+
+      // 로그
       await ref.collection('energy_transactions').add({
         'type': 'ad_reward',
         'amount': 5,
@@ -170,7 +200,7 @@ class UserService {
     });
   }
 
-  // 3️⃣ 젬으로 충전 (젬 10개 소모 → +5 에너지)
+  // 3️⃣ 젬으로 충전 (젬 5개 소모 → +5 에너지)
   Future<void> restoreEnergyViaGem(String uid, int gemCost) async {
     final ref = _db.collection('users').doc(uid);
     await _db.runTransaction((t) async {
