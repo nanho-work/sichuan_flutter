@@ -4,7 +4,7 @@ import '../../../providers/inventory_provider.dart';
 import 'package:provider/provider.dart';
 import '../../../models/user_item_model.dart';
 
-class InventoryDetailDialog extends StatelessWidget {
+class InventoryDetailDialog extends StatefulWidget {
   final ItemModel item;
   final bool owned;
 
@@ -15,21 +15,30 @@ class InventoryDetailDialog extends StatelessWidget {
   });
 
   @override
+  State<InventoryDetailDialog> createState() => _InventoryDetailDialogState();
+}
+
+class _InventoryDetailDialogState extends State<InventoryDetailDialog> {
+  bool _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
     final inventoryProvider = context.watch<InventoryProvider>();
     final ownedItem = inventoryProvider.inventory.firstWhere(
-      (i) => i.itemId == item.id,
+      (i) => i.itemId == widget.item.id,
       orElse: () => UserItemModel(
         uid: '',
-        itemId: item.id,
-        category: item.category.value,
+        itemId: widget.item.id,
+        category: widget.item.category.value,
         equipped: false,
         source: 'shop',
         upgradeLevel: 1,
         ownedAt: DateTime.now(),
       ),
     );
+
     final isEquipped = ownedItem.equipped;
+    final owned = widget.owned;
 
     return Dialog(
       backgroundColor: Colors.grey.shade900,
@@ -41,23 +50,23 @@ class InventoryDetailDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // 이미지
-            if (item.images?.isNotEmpty == true)
+            if (widget.item.images?.isNotEmpty == true)
               Image.asset(
-                item.images!.first,
+                widget.item.images!.first,
                 height: 120,
               ),
             const SizedBox(height: 12),
 
             // 이름 + 희귀도
             Text(
-              item.name,
+              widget.item.name,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 4),
             Text(
-              item.rarity.value.toUpperCase(),
+              widget.item.rarity.value.toUpperCase(),
               style: TextStyle(
-                color: _rarityColor(item.rarity),
+                color: _rarityColor(widget.item.rarity),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -65,7 +74,9 @@ class InventoryDetailDialog extends StatelessWidget {
 
             // 설명
             Text(
-              item.description.isNotEmpty ? item.description : "아이템 설명이 없습니다.",
+              widget.item.description.isNotEmpty
+                  ? widget.item.description
+                  : "아이템 설명이 없습니다.",
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
@@ -81,19 +92,42 @@ class InventoryDetailDialog extends StatelessWidget {
                   ElevatedButton.icon(
                     icon: const Icon(Icons.check),
                     label: const Text("장착중"),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                    ),
                     onPressed: null,
                   ),
+
                 if (owned && !isEquipped)
                   ElevatedButton.icon(
                     icon: const Icon(Icons.check),
-                    label: const Text("장착"),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
-                    onPressed: () async {
-                      await inventoryProvider.unequipCategory(item.category);
-                      await inventoryProvider.setEquipped(item.id, true);
-                      Navigator.pop(context);
-                    },
+                    label: _isLoading
+                        ? const Text("처리중...")
+                        : const Text("장착"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _isLoading ? Colors.grey : Colors.blueAccent,
+                    ),
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            if (_isLoading) return;
+                            setState(() => _isLoading = true);
+
+                            try {
+                            await inventoryProvider.unequipCategory(widget.item.category);
+                            await inventoryProvider.setEquipped(widget.item.id, true);
+
+                            // ✅ 안전한 Navigator pop
+                            if (mounted && Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                            }
+                            } catch (e) {
+                            debugPrint("❌ Equip action failed: $e");
+                            } finally {
+                            if (mounted) setState(() => _isLoading = false);
+                            }
+                        },
                   ),
               ],
             ),
@@ -101,8 +135,13 @@ class InventoryDetailDialog extends StatelessWidget {
 
             // 닫기 버튼
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("닫기", style: TextStyle(color: Colors.white54)),
+              onPressed: _isLoading
+                  ? null
+                  : () => Navigator.pop(context),
+              child: const Text(
+                "닫기",
+                style: TextStyle(color: Colors.white54),
+              ),
             ),
           ],
         ),

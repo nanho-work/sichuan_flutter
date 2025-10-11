@@ -11,7 +11,7 @@ class StoreTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ItemProvider>();
+    final provider = context.read<ItemProvider>();
     final items = provider.itemsByCategory(category.value);
 
     if (items.isEmpty) {

@@ -248,11 +248,14 @@ class ItemModel {
 
   /// 현재 레벨의 이미지 경로 반환 (기본 1레벨)
   String imagePathForLevel(int level) {
-    final found = levels.firstWhere(
-      (e) => e.level == level,
-      orElse: () => levels.first,
-    );
-    return found.imagePath;
+    if (levels == null || levels!.isEmpty) return '';
+    final match = levels!.where((lv) => lv.level == level);
+    if (match.isEmpty) {
+      // ✅ level이 없을 경우 첫번째 이미지라도 리턴
+      final fallback = levels!.first.imagePath ?? '';
+      return fallback;
+    }
+    return match.first.imagePath ?? '';
   }
 
   /// 해당 레벨의 효과 반환 (절대값 기준)
