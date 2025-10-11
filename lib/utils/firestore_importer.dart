@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// 기존: 배경 아이템 업로드
 Future<void> importItemsFromJson() async {
   final db = FirebaseFirestore.instance;
-  final String jsonString = await rootBundle.loadString('assets/data/items_backgrounds.json');
+  final String jsonString = await rootBundle.loadString('assets/data/items_blocks.json');
   final List<dynamic> items = jsonDecode(jsonString);
 
   for (final item in items) {

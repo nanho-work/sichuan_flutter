@@ -46,6 +46,8 @@ flutter:
     - assets/
     - assets/images/
     - assets/icons/
+    - assets/icons/fruit/
+    - assets/icons/toko/
     - assets/sounds/bgm/
     - assets/sounds/sfx/
     - assets/images/characters/
@@ -57,7 +59,7 @@ flutter:
     - assets/data/items_blocks.json
     - assets/data/items_backgrounds.json
     - assets/data/item_sets.json
-    - assets/icons/fruit/
+    
     
 
 flutter_launcher_icons:
