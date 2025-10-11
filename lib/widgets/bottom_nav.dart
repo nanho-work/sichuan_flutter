@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../managers/sound_manager.dart';
 import '../screens/home_screen.dart';
 import '../screens/store_screen.dart';
 import '../screens/inventory_screen.dart';
@@ -29,6 +30,9 @@ class _BottomNavState extends State<BottomNav> {
     setState(() {
       _selectedIndex = index;
     });
+
+    // ✅ 공통 탭 효과음
+    SoundManager().playSFX('menu_tab.mp3');
   }
 
   @override

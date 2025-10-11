@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../common/app_notifier.dart';
 import '../../../managers/image_manager.dart';
 import '../../../providers/inventory_provider.dart';
 import 'widgets/wood_button.dart';
@@ -165,25 +166,19 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
 
   Future<void> _handlePurchase() async {
     if (_isOwned) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이미 보유중인 아이템입니다.')),
-      );
+      AppNotifier.showInfo(context, '이미 보유중인 아이템입니다.');
       return;
     }
     setState(() => _isLoading = true);
     try {
       await context.read<InventoryProvider>().purchaseItem(widget.item);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('구매가 완료되었습니다.')),
-        );
+        AppNotifier.showSuccess(context, '구매가 완료되었습니다.');
         await widget.onPurchased();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('구매 실패: $e')),
-        );
+        AppNotifier.showError(context, '구매 실패: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -222,11 +217,11 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
         try {
           final message = await context.read<InventoryProvider>().purchaseItem(widget.item);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
             if (message.contains("완료")) {
+              AppNotifier.showSuccess(context, message);
               await widget.onPurchased();
+            } else {
+              AppNotifier.showInfo(context, message);
             }
           }
         } finally {

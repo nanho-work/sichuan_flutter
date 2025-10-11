@@ -3,6 +3,7 @@ import '../../services/auth_service.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/splash_screen.dart';
 import '../../main.dart'; // ✅ 추가 (SplashScreenWrapper 접근용)
+import '../common/app_notifier.dart';
 
 class AccountDialog extends StatelessWidget {
   const AccountDialog({super.key});
@@ -32,9 +33,11 @@ class AccountDialog extends StatelessWidget {
                 final user = await AuthService().linkGuestToGoogle();
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(user != null ? '계정이 연동되었습니다.' : '연동 실패')),
-                  );
+                  if (user != null) {
+                    AppNotifier.showSuccess(context, '계정이 연동되었습니다.');
+                  } else {
+                    AppNotifier.showError(context, '계정 연동에 실패했습니다.');
+                  }
                 }
               },
             ),

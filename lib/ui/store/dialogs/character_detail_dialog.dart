@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../models/item_model.dart';
 import '../../../managers/image_manager.dart';
 import '../../../providers/inventory_provider.dart';
+import '../../common/app_notifier.dart';
 import 'widgets/effect_grid.dart';
 import 'widgets/thumb_button.dart';
 import 'widgets/wood_button.dart';
@@ -226,13 +227,16 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
         try {
           final message = await context.read<InventoryProvider>().purchaseItem(widget.item);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
-
             if (message.contains("완료")) {
+              AppNotifier.showSuccess(context, message);
               await widget.closeDialog();
+            } else {
+              AppNotifier.showInfo(context, message);
             }
+          }
+        } catch (_) {
+          if (mounted) {
+            AppNotifier.showError(context, "구매 중 오류가 발생했습니다.");
           }
         } finally {
           if (mounted) setState(() => _isLoading = false);

@@ -40,41 +40,50 @@ class _StoreScreenState extends State<StoreScreen> with TickerProviderStateMixin
 
     return Scaffold(
       backgroundColor: Colors.transparent, // 메인 레이아웃 배경을 그대로 사용
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 탭바
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C2A3A).withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                tabs: tabs,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                indicator: BoxDecoration(
-                  color: const Color(0xFF2F4E6B),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-
-            // 컨텐츠
-            Expanded(
-              child: itemProvider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : TabBarView(
-                      controller: _tabController,
-                      children: List.generate(
-                        categories.length,
-                        (i) => StoreTabView(category: categories[i]),
-                      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/store_bg.png',
+            fit: BoxFit.cover,
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // 탭바
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C2A3A).withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    tabs: tabs,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    indicator: BoxDecoration(
+                      color: const Color(0xFF2F4E6B),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                  ),
+                ),
+
+                // 컨텐츠
+                Expanded(
+                  child: itemProvider.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : TabBarView(
+                          controller: _tabController,
+                          children: List.generate(
+                            categories.length,
+                            (i) => StoreTabView(category: categories[i]),
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

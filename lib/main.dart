@@ -37,7 +37,7 @@ Future<void> main() async {
     await MobileAds.instance.initialize();
   }
 
-  qawait importItemsFromJson(); // 제이슨 아이템 등록 , 등록후 주석처리 할 것.
+  // await importItemsFromJson(); // 제이슨 아이템 등록 , 등록후 주석처리 할 것.
   // await importItemSetsFromJson(); // 제이슨 셋트목록 아이템 등록 , 등록후 주석처리 할 것.
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);

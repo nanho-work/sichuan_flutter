@@ -5,6 +5,7 @@
     "description": "탐험가 쿠피, 과일 블록, 모래사막 배경을 모두 장착하면 추가 탐험 보너스를 획득합니다.",
     "available": true,
     "synergy_count": 3,
+    "required_items": ["char_koofy", "block_fruit", "bg_desert"],
     "effects": {
       "time_limit_bonus": 1.5,
       "gold_bonus": 10,
@@ -21,6 +22,7 @@
     "description": "강인한 전사 보리, 철제 블록, 전장의 배경을 함께 착용하면 전투 보너스 효과를 얻습니다.",
     "available": true,
     "synergy_count": 3,
+    "required_items": ["char_bori", "block_bori", "bg_battlefield"],
     "effects": {
       "time_limit_bonus": 0.5,
       "gold_bonus": 5,
@@ -37,6 +39,7 @@
     "description": "상인 토코, 골드 블록, 시장 배경을 함께 착용하면 거래 효율이 상승합니다.",
     "available": true,
     "synergy_count": 3,
+    "required_items": ["char_toko", "block_toko", "bg_market"],
     "effects": {
       "time_limit_bonus": 0,
       "gold_bonus": 25,
@@ -53,6 +56,7 @@
     "description": "마법사 루마, 마법 블록, 신비로운 숲 배경을 모두 장착하면 마법 능력이 강화됩니다.",
     "available": true,
     "synergy_count": 3,
+    "required_items": ["char_luma", "block_luma", "bg_forest"],
     "effects": {
       "time_limit_bonus": 2.0,
       "gold_bonus": 8,
@@ -69,6 +73,7 @@
     "description": "수도사 모모, 대나무 블록, 산사 배경을 착용하면 평온한 에너지가 흐르며 생존력이 증가합니다.",
     "available": true,
     "synergy_count": 3,
+    "required_items": ["char_momo", "block_momo", "bg_temple"],
     "effects": {
       "time_limit_bonus": 1.0,
       "gold_bonus": 5,

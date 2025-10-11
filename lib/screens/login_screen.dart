@@ -65,9 +65,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             GestureDetector(
                               onTap: () async {
                                 sound.playSFX('login_touch.mp3');
+
+                                // 🔹 로딩 다이얼로그 표시
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (_) => const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+
                                 final user = await _authService.signInWithGoogle();
+
+                                Navigator.of(context).pop(); // 🔹 로딩 다이얼로그 닫기
+
                                 if (user != null) {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop(); // 🔹 로그인 선택 다이얼로그 닫기
                                   _onLoginSuccess();
                                 }
                               },
@@ -90,7 +105,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             GestureDetector(
                               onTap: () async {
                                 sound.playSFX('login_touch.mp3');
+
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (_) => const Center(
+                                    child: CircularProgressIndicator(color: Colors.white),
+                                  ),
+                                );
+
                                 final user = await _authService.signInAsGuest();
+                                Navigator.of(context).pop();
+
                                 if (user != null) {
                                   Navigator.of(context).pop();
                                   _onLoginSuccess();

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/item_model.dart';
 
 class UserModel {
   final String uid;
@@ -19,6 +20,7 @@ class UserModel {
   final int currentStage;
   final int adEnergyCount;
   final DateTime? adEnergyDate;
+  final ItemEffects? setEffects;
 
   UserModel({
     required this.uid,
@@ -38,6 +40,7 @@ class UserModel {
     required this.currentStage,
     this.adEnergyCount = 0,
     this.adEnergyDate,
+    this.setEffects,
   });
 
   factory UserModel.fromDoc(DocumentSnapshot doc) {
@@ -62,6 +65,7 @@ class UserModel {
       adEnergyDate: (data['ad_energy_date'] is Timestamp)
           ? (data['ad_energy_date'] as Timestamp).toDate()
           : null,
+      setEffects: data['set_effects'] != null ? ItemEffects.fromMap(data['set_effects'] as Map<String, dynamic>) : null,
     );
   }
 
@@ -92,11 +96,12 @@ class UserModel {
       adEnergyDate: (data['ad_energy_date'] is Timestamp)
           ? (data['ad_energy_date'] as Timestamp).toDate()
           : null,
+      setEffects: data['set_effects'] != null ? ItemEffects.fromMap(data['set_effects'] as Map<String, dynamic>) : null,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    final map = {
       'uid': uid,
       'nickname': nickname,
       'email': email,
@@ -115,6 +120,10 @@ class UserModel {
       'ad_energy_count': adEnergyCount,
       'ad_energy_date': adEnergyDate?.toIso8601String(),
     };
+    if (setEffects != null) {
+      map['set_effects'] = setEffects!.toMap();
+    }
+    return map;
   }
 
   String toJsonString() => jsonEncode(toMap());
@@ -142,6 +151,7 @@ class UserModel {
       currentStage: changes['current_stage'] ?? currentStage,
       adEnergyCount: changes['ad_energy_count'] ?? adEnergyCount,
       adEnergyDate: changes['ad_energy_date'] ?? adEnergyDate,
+      setEffects: changes['set_effects'] ?? setEffects,
     );
   }
     bool get adLimitReached {

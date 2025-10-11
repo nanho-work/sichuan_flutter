@@ -72,7 +72,7 @@ class EquippedItemView extends StatelessWidget {
     final bgData = items.firstWhere(
       (i) => i.id == equippedBackground.itemId,
       orElse: () => ItemModel(
-        id: 'default_bg',
+        id: 'bg_default',
         name: '기본 배경',
         category: ItemCategory.background,
         description: '',
@@ -87,7 +87,7 @@ class EquippedItemView extends StatelessWidget {
     final blockData = items.firstWhere(
       (i) => i.id == equippedBlock.itemId,
       orElse: () => ItemModel(
-        id: 'default_block',
+        id: 'block_default',
         name: '기본 블록 세트',
         category: ItemCategory.blockSet,
         description: '',

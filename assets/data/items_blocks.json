@@ -46,33 +46,33 @@
   }
   ,
   {
-    "id": "block_bori",
-    "name": "보리 블록 셋트",
+    "id": "block_toko",
+    "name": "토코 블록 셋트",
     "category": "block_set",
-    "description": "황무지 전사의 기운이 느껴지는 블록 셋트. 거칠고 강인한 모래색 블록으로 구성되어 있습니다.",
+    "description": "토코의 상점",
     "rarity": "rare",
     "currency": "gold",
     "available": true,
     "price": 1200,
     "count": 25,
     "set_id": "set_toko",
-    "asset_path_prefix": "assets/icons/bori/",
+    "asset_path_prefix": "assets/icons/toko/",
     "thumbnails": [
-      "assets/icons/toko/tori_block_set.png"
+      "assets/icons/toko/toko_block_set.png"
     ],
     "images": [
-      "assets/icons/toko/tori_block_01.png",
-      "assets/icons/toko/tori_block_02.png",
-      "assets/icons/toko/tori_block_03.png",
-      "assets/icons/toko/tori_block_04.png",
-      "assets/icons/toko/tori_block_05.png",
-      "assets/icons/toko/tori_block_06.png",
-      "assets/icons/toko/tori_block_07.png",
-      "assets/icons/toko/tori_block_08.png",
-      "assets/icons/toko/tori_block_09.png",
-      "assets/icons/toko/tori_block_10.png",
-      "assets/icons/toko/tori_block_11.png",
-      "assets/icons/toko/tori_block_12.png"
+      "assets/icons/toko/toko_block_01.png",
+      "assets/icons/toko/toko_block_02.png",
+      "assets/icons/toko/toko_block_03.png",
+      "assets/icons/toko/toko_block_04.png",
+      "assets/icons/toko/toko_block_05.png",
+      "assets/icons/toko/toko_block_06.png",
+      "assets/icons/toko/toko_block_07.png",
+      "assets/icons/toko/toko_block_08.png",
+      "assets/icons/toko/toko_block_09.png",
+      "assets/icons/toko/toko_block_10.png",
+      "assets/icons/toko/toko_block_11.png",
+      "assets/icons/toko/toko_block_12.png"
     ]
   }
 ]

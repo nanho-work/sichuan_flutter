@@ -4,6 +4,7 @@ import '../../../providers/item_provider.dart';
 import '../../../providers/inventory_provider.dart';
 import '../../../models/item_model.dart';
 import '../dialogs/inventory_detail_dialog.dart';
+import '../../../models/user_item_model.dart';
 
 class InventoryCharacterView extends StatelessWidget {
   const InventoryCharacterView({super.key});
@@ -33,7 +34,21 @@ class InventoryCharacterView extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final item = items[index];
-        final owned = inventory.any((i) => i.itemId == item.id);
+        final ownedItem = inventory.firstWhere(
+          (i) => i.itemId == item.id,
+          orElse: () => UserItemModel(
+            uid: '',
+            itemId: item.id,
+            category: item.category.value,
+            equipped: false,
+            source: 'shop',
+            upgradeLevel: 1,
+            ownedAt: DateTime.now(),
+          ),
+        );
+
+        final owned = ownedItem.itemId.isNotEmpty;
+        final isEquipped = ownedItem.equipped;
 
         return GestureDetector(
           onTap: owned
@@ -50,22 +65,41 @@ class InventoryCharacterView extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Stack(
-                alignment: Alignment.center,
-                children: [
-                    // 🔹 캐릭터는 levels[0].image_path 사용
-                    Image.asset(
-                    item.imagePathForLevel(1),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.person, color: Colors.white30, size: 48),
+              alignment: Alignment.center,
+              children: [
+                Image.asset(
+                  item.imagePathForLevel(1),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.person, color: Colors.white30, size: 48),
+                ),
+                if (!owned)
+                  Container(
+                    color: Colors.black54,
+                    alignment: Alignment.center,
+                    child: const Text("미보유", style: TextStyle(color: Colors.white)),
+                  ),
+                if (isEquipped)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blueAccent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        "장착중",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    if (!owned)
-                    Container(
-                        color: Colors.black54,
-                        alignment: Alignment.center,
-                        child: const Text("미보유", style: TextStyle(color: Colors.white)),
-                    ),
-                ],
+                  ),
+              ],
             ),
           ),
         );
