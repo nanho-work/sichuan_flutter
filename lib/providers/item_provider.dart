@@ -5,7 +5,9 @@
 // - 카테고리 필터
 // - 선택 및 갱신
 // =======================================================
+import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/item_model.dart';
 import '../services/item_service.dart';
 
@@ -21,19 +23,52 @@ class ItemProvider extends ChangeNotifier {
   ItemModel? get selectedItem => _selectedItem;
 
   /// ✅ 모든 아이템 불러오기
-  Future<void> loadAllItems() async {
+  Future<void> loadAllItems({bool forceRefresh = false}) async {
+    if (!forceRefresh && _items.isNotEmpty) {
+      // Use cached data
+      return;
+    }
     _isLoading = true;
     notifyListeners();
 
-    try {
-      _items = await _service.fetchAllItems();
-    } catch (e) {
-      debugPrint("❌ ItemProvider.loadAllItems Error: $e");
-      _items = [];
-    }
+    unawaited(_loadAllItemsAsync());
+  }
 
-    _isLoading = false;
-    notifyListeners();
+  Future<void> _loadAllItemsAsync() async {
+    try {
+      final fetchedItems = await _service.fetchAllItems();
+      // Enrich items with set data if setId exists
+      final List<ItemModel> enrichedItems = List.from(fetchedItems);
+      final futures = <Future<void>>[];
+      for (int i = 0; i < enrichedItems.length; i++) {
+        final item = enrichedItems[i];
+        if (item.setId != null && item.setId!.isNotEmpty) {
+          futures.add(FirebaseFirestore.instance
+              .collection('item_sets')
+              .doc(item.setId)
+              .get()
+              .then((doc) {
+            if (doc.exists) {
+              final data = doc.data();
+              if (data != null) {
+                enrichedItems[i] = item.copyWith(
+                  setName: data['name'] as String?,
+                  setEffects: (data['effects'] as Map<String, dynamic>?),
+                );
+              }
+            }
+          }).catchError((_) {}));
+        }
+      }
+      await Future.wait(futures);
+      _items = enrichedItems;
+    } catch (e) {
+      debugPrint("❌ ItemProvider._loadAllItemsAsync Error: $e");
+      _items = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// ✅ 카테고리별 로드
@@ -41,15 +76,44 @@ class ItemProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      _items = await _service.fetchByCategory(category);
-    } catch (e) {
-      debugPrint("❌ ItemProvider.loadByCategory Error: $e");
-      _items = [];
-    }
+    unawaited(_loadByCategoryAsync(category));
+  }
 
-    _isLoading = false;
-    notifyListeners();
+  Future<void> _loadByCategoryAsync(String category) async {
+    try {
+      final fetchedItems = await _service.fetchByCategory(category);
+      // Enrich items with set data if setId exists
+      final List<ItemModel> enrichedItems = List.from(fetchedItems);
+      final futures = <Future<void>>[];
+      for (int i = 0; i < enrichedItems.length; i++) {
+        final item = enrichedItems[i];
+        if (item.setId != null && item.setId!.isNotEmpty) {
+          futures.add(FirebaseFirestore.instance
+              .collection('item_sets')
+              .doc(item.setId)
+              .get()
+              .then((doc) {
+            if (doc.exists) {
+              final data = doc.data();
+              if (data != null) {
+                enrichedItems[i] = item.copyWith(
+                  setName: data['name'] as String?,
+                  setEffects: (data['effects'] as Map<String, dynamic>?),
+                );
+              }
+            }
+          }).catchError((_) {}));
+        }
+      }
+      await Future.wait(futures);
+      _items = enrichedItems;
+    } catch (e) {
+      debugPrint("❌ ItemProvider._loadByCategoryAsync Error: $e");
+      _items = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// ✅ 단일 아이템 선택
@@ -93,7 +157,7 @@ class ItemProvider extends ChangeNotifier {
   }
 
   /// ✅ 전체 새로고침
-  Future<void> refresh() async => loadAllItems();
+  Future<void> refresh() async => loadAllItems(forceRefresh: true);
 
   /// ✅ 카테고리별 아이템 반환 (필터링)
   List<ItemModel> itemsByCategory(String category) {

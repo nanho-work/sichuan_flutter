@@ -112,12 +112,18 @@ class EquippedItemView extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '착용 중 캐릭터: ${charData.name}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                    RichText(
+                      textAlign: TextAlign.left,
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        children: [
+                          const TextSpan(text: '캐릭터: '),
+                          TextSpan(text: '${charData.name}\n', style: const TextStyle(color: Colors.blueAccent)),
+                          const TextSpan(text: '배경: '),
+                          TextSpan(text: '${bgData.name}\n', style: const TextStyle(color: Colors.greenAccent)),
+                          const TextSpan(text: '블록: '),
+                          TextSpan(text: '${blockData.name}', style: const TextStyle(color: Colors.orangeAccent)),
+                        ],
                       ),
                     ),
                   ],

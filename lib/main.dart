@@ -21,6 +21,7 @@ import 'package:sichuan_flutter/providers/item_provider.dart';
 import 'package:sichuan_flutter/providers/inventory_provider.dart';
 
 import 'package:sichuan_flutter/utils/firestore_importer.dart'; // 아이템 데이터 등록용
+import 'package:sichuan_flutter/game/providers/game_provider.dart'; 
 
 // ✅ 전역 navigatorKey 추가 (Provider 외부 접근용)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -58,6 +59,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
         ChangeNotifierProvider(create: (_) => ItemProvider()),
         ChangeNotifierProvider(create: (_) => InventoryProvider()..loadInventory()),
+        ChangeNotifierProvider(create: (_) => GameProvider()),
       ],
       child: KoofyApp(isLoggedIn: user != null),
     ),

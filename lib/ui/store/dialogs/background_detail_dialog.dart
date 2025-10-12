@@ -19,6 +19,14 @@ class _BackgroundDetailDialogState extends State<BackgroundDetailDialog>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
 
+  final Map<String, String> _effectLabels = {
+    'time_limit_bonus': '제한 시간 증가',
+    'score_bonus': '점수 보너스',
+    'coin_bonus': '코인 보너스',
+    'exp_bonus': '경험치 보너스',
+    // 필요한 다른 매핑을 여기에 추가
+  };
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +44,7 @@ class _BackgroundDetailDialogState extends State<BackgroundDetailDialog>
   }
 
   Future<void> _closeDialog() async {
-    await _animController.reverse();
+    _animController.reverse();
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -47,6 +55,9 @@ class _BackgroundDetailDialogState extends State<BackgroundDetailDialog>
     final currency = (widget.item.currency is ItemCurrency)
         ? (widget.item.currency as ItemCurrency).name
         : 'free';
+
+    final setName = widget.item.setName;
+    final setEffects = widget.item.setEffects as Map<String, dynamic>?;
 
     return WillPopScope(
       onWillPop: () async {
@@ -87,44 +98,83 @@ class _BackgroundDetailDialogState extends State<BackgroundDetailDialog>
               boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 12)],
             ),
             padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(widget.item.name ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                const SizedBox(height: 12),
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: (widget.item.images?.isNotEmpty ?? false)
-                        ? Image.asset(widget.item.images!.first, fit: BoxFit.cover)
-                        : Container(color: Colors.black12),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(widget.item.name ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  const SizedBox(height: 12),
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: (widget.item.images?.isNotEmpty ?? false)
+                          ? Image.asset(widget.item.images!.first, fit: BoxFit.cover)
+                          : Container(color: Colors.black12),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black87)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PurchaseButton(
-                        item: widget.item,
-                        price: price,
-                        currency: currency,
-                        closeDialog: _closeDialog,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedDialogButton(
-                        label: '닫기',
-                        onTap: _closeDialog,
-                      ),
-                    ),
+                  const SizedBox(height: 12),
+                  Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black87)),
+                  if (setName != null && setName.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text("세트: $setName",
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
+                    const SizedBox(height: 6),
                   ],
-                ),
-              ],
+                  if (setEffects != null && setEffects.isNotEmpty)
+                    (() {
+                      final effectLabels = {
+                        'time_limit_bonus': '제한 시간 증가',
+                        'gold_bonus': '골드 보너스',
+                        'revive': '부활 횟수',
+                        'shuffle': '섞기 증가',
+                        'hint_bonus': '힌트 추가',
+                        'bomb_bonus': '폭탄 추가',
+                        'obstacle_remove': '장애물 제거 ',
+                      };
+                      return Container(
+                        padding: const EdgeInsets.all(8),
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.black12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: setEffects.entries.map((e) {
+                            final label = effectLabels[e.key] ?? e.key;
+                            return Text(
+                              "$label: ${e.value}",
+                              style: const TextStyle(fontSize: 13, color: Colors.black87),
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    })(),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _PurchaseButton(
+                          item: widget.item,
+                          price: price,
+                          currency: currency,
+                          closeDialog: _closeDialog,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedDialogButton(
+                          label: '닫기',
+                          onTap: _closeDialog,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -186,15 +236,21 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
           final message = await context.read<InventoryProvider>().purchaseItem(widget.item);
           if (mounted) {
             if (message.contains("완료")) {
-              AppNotifier.showSuccess(context, message);
+              Future.delayed(Duration.zero, () {
+                AppNotifier.showSuccess(context, message);
+              });
               await widget.closeDialog();
             } else {
-              AppNotifier.showInfo(context, message);
+              Future.delayed(Duration.zero, () {
+                AppNotifier.showInfo(context, message);
+              });
             }
           }
         } catch (_) {
           if (mounted) {
-            AppNotifier.showError(context, '구매 처리 중 오류가 발생했습니다.');
+            Future.delayed(Duration.zero, () {
+              AppNotifier.showError(context, '구매 처리 중 오류가 발생했습니다.');
+            });
           }
         } finally {
           if (mounted) setState(() => _isLoading = false);

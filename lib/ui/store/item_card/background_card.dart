@@ -48,7 +48,7 @@ class BackgroundCard extends StatelessWidget {
           barrierDismissible: true,
           builder: (_) => ItemDetailDialog(item: item),
         );
-        await context.read<ItemProvider>().refresh();
+        // await context.read<ItemProvider>().refresh();
       },
       child: Container(
         decoration: BoxDecoration(

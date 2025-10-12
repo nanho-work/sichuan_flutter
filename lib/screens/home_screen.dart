@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/settings/settings_dialog.dart';
 import '../managers/sound_manager.dart';
 import '../ads/ad_rewarded.dart';
+import '../game/ui/game_screen.dart'; // ✅ 게임 스크린 import 추가
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,22 +12,23 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   @override
   void initState() {
     super.initState();
     AdRewardedService.loadRewardedAd();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   void _openSettingsDialog() {
     showDialog(
       context: context,
       builder: (context) => const SettingsDialog(),
+    );
+  }
+
+  void _startGame() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const GameScreen()), // ✅ 게임 화면 이동
     );
   }
 
@@ -41,6 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 'Welcome to Koofy Universe!',
                 style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _startGame,
+                child: const Text("🎮 게임 시작"),
               ),
               const SizedBox(height: 20),
               ElevatedButton(

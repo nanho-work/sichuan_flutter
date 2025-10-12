@@ -1,0 +1,88 @@
+{
+  "id": "stage_001",
+  "name": "모험의 시작",
+  "difficulty": "easy",
+  "rows": 13,
+  "cols": 9,
+  "time_limit": 300,
+
+  "modifiers": {
+    "enable_hint": true,
+    "enable_bomb": true,
+    "enable_shuffle": true,
+    "enable_revive": false,
+    "enable_time_bonus": true,
+    "time_bonus_per_combo": 2
+  },
+
+  "objectives": {
+    "type": "clear_all"
+  },
+
+  "rewards": {
+    "gold": 50,
+    "gem": 1,
+    "exp": 10
+  },
+
+  "tiles": {
+    "data": [
+      { "x": 5, "y": 6, "layer": 2 },
+      { "x": 3, "y": 4, "layer": 1 },
+      { "x": 6, "y": 9, "layer": 3 },
+      { "x": 8, "y": 1, "layer": 1 },
+      { "x": 1, "y": 7, "layer": 3 },
+      { "x": 2, "y": 10, "layer": 2 },
+      { "x": 5, "y": 12, "layer": 1 },
+      { "x": 4, "y": 1, "layer": 3 },
+      { "x": 7, "y": 5, "layer": 2 },
+      { "x": 2, "y": 4, "layer": 1 },
+      { "x": 8, "y": 6, "layer": 1 },
+      { "x": 1, "y": 2, "layer": 2 },
+      { "x": 6, "y": 11, "layer": 3 },
+      { "x": 3, "y": 10, "layer": 1 },
+      { "x": 5, "y": 2, "layer": 2 },
+      { "x": 4, "y": 7, "layer": 1 },
+      { "x": 7, "y": 12, "layer": 3 },
+      { "x": 2, "y": 1, "layer": 2 },
+      { "x": 8, "y": 8, "layer": 1 },
+      { "x": 1, "y": 5, "layer": 3 },
+      { "x": 6, "y": 3, "layer": 1 },
+      { "x": 3, "y": 8, "layer": 2 },
+      { "x": 5, "y": 4, "layer": 3 },
+      { "x": 4, "y": 11, "layer": 2 },
+      { "x": 7, "y": 4, "layer": 1 },
+      { "x": 2, "y": 9, "layer": 3 },
+      { "x": 8, "y": 2, "layer": 2 },
+      { "x": 1, "y": 11, "layer": 1 },
+      { "x": 6, "y": 7, "layer": 2 },
+      { "x": 3, "y": 6, "layer": 3 },
+      { "x": 5, "y": 10, "layer": 1 },
+      { "x": 4, "y": 3, "layer": 2 },
+      { "x": 7, "y": 9, "layer": 1 },
+      { "x": 2, "y": 6, "layer": 2 },
+      { "x": 8, "y": 4, "layer": 3 },
+      { "x": 1, "y": 8, "layer": 1 },
+      { "x": 6, "y": 1, "layer": 2 },
+      { "x": 3, "y": 2, "layer": 3 },
+      { "x": 5, "y": 8, "layer": 1 },
+      { "x": 4, "y": 5, "layer": 3 },
+      { "x": 7, "y": 10, "layer": 2 },
+      { "x": 2, "y": 7, "layer": 1 }
+    ]
+  },
+
+  "obstacles": {
+    "data": [
+      { "x": 3, "y": 2, "type": "ice", "durability": 2 },
+      { "x": 5, "y": 5, "type": "stone" }
+    ]
+  },
+
+  "special_tiles": {
+    "data": [
+      { "x": 2, "y": 3, "effect": "bomb" },
+      { "x": 4, "y": 1, "effect": "shuffle" }
+    ]
+  }
+}

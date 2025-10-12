@@ -21,8 +21,17 @@ class _CharacterDetailDialogState extends State<CharacterDetailDialog>
     with SingleTickerProviderStateMixin {
   int _previewIndex = 0;
   late AnimationController _animController;
+  bool _isLoading = false;
 
   List<dynamic> get _levels => (widget.item.levels as List?) ?? [];
+
+  void _setLoading(bool loading) {
+    if (mounted) {
+      setState(() {
+        _isLoading = loading;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -41,7 +50,7 @@ class _CharacterDetailDialogState extends State<CharacterDetailDialog>
   }
 
   Future<void> _closeDialog() async {
-    await _animController.reverse(); // 🔄 축소 후 닫기
+    _animController.reverse(); // 🔄 축소 후 닫기 (run asynchronously)
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -77,6 +86,7 @@ class _CharacterDetailDialogState extends State<CharacterDetailDialog>
 
     return WillPopScope(
       onWillPop: () async {
+        if (_isLoading) return false;
         await _closeDialog();
         return false;
       },
@@ -114,63 +124,104 @@ class _CharacterDetailDialogState extends State<CharacterDetailDialog>
               boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 12)],
             ),
             padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                const SizedBox(height: 8),
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Row(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  const SizedBox(height: 8),
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Row(
+                      children: [
+                        ThumbButton(
+                          image: _imageAt((_previewIndex - 1).clamp(0, _levels.length - 1)),
+                          onTap: () => setState(() =>
+                              _previewIndex = (_previewIndex - 1).clamp(0, _levels.length - 1)),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: imageMain.isNotEmpty
+                                ? Image.asset(imageMain, fit: BoxFit.contain)
+                                : Container(color: Colors.black12),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ThumbButton(
+                          image: _imageAt((_previewIndex + 1).clamp(0, _levels.length - 1)),
+                          onTap: () => setState(() =>
+                              _previewIndex = (_previewIndex + 1).clamp(0, _levels.length - 1)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black87)),
+                  const SizedBox(height: 8),
+                  // 세트 이름 표시
+                  if (widget.item.setName != null && (widget.item.setName as String).isNotEmpty)
+                    ...[
+                      Text("세트: ${widget.item.setName}",
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                    ],
+                  // 세트 효과 표시 (타입 안전성 보장)
+                  if (widget.item.setEffects != null &&
+                      widget.item.setEffects is Map &&
+                      (widget.item.setEffects as Map).isNotEmpty)
+                    (() {
+                      final effectLabels = {
+                        'time_limit_bonus': '제한 시간 증가',
+                        'gold_bonus': '골드 보너스',
+                        'revive': '부활 횟수',
+                        'shuffle': '섞기 증가',
+                        'hint_bonus': '힌트 추가',
+                        'bomb_bonus': '폭탄 추가',
+                        'obstacle_remove': '장애물 제거 ',
+                      };
+                      return Container(
+                        padding: const EdgeInsets.all(8),
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.black12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: (widget.item.setEffects as Map<String, dynamic>).entries.map((e) {
+                            final label = effectLabels[e.key] ?? e.key;
+                            return Text("$label: ${e.value}", style: const TextStyle(fontSize: 13, color: Colors.black87));
+                          }).toList(),
+                        ),
+                      );
+                    })(),
+                  EffectGrid(effects: effects),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      ThumbButton(
-                        image: _imageAt((_previewIndex - 1).clamp(0, _levels.length - 1)),
-                        onTap: () => setState(() =>
-                            _previewIndex = (_previewIndex - 1).clamp(0, _levels.length - 1)),
-                      ),
-                      const SizedBox(width: 8),
                       Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: imageMain.isNotEmpty
-                              ? Image.asset(imageMain, fit: BoxFit.contain)
-                              : Container(color: Colors.black12),
+                        child: _PurchaseButton(
+                          item: widget.item,
+                          price: price,
+                          currency: currency,
+                          closeDialog: _closeDialog,
+                          setLoading: _setLoading,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      ThumbButton(
-                        image: _imageAt((_previewIndex + 1).clamp(0, _levels.length - 1)),
-                        onTap: () => setState(() =>
-                            _previewIndex = (_previewIndex + 1).clamp(0, _levels.length - 1)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedDialogButton(
+                          label: '닫기',
+                          onTap: _isLoading ? null : _closeDialog,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black87)),
-                const SizedBox(height: 8),
-                EffectGrid(effects: effects),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PurchaseButton(
-                        item: widget.item,
-                        price: price,
-                        currency: currency,
-                        closeDialog: _closeDialog,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedDialogButton(
-                        label: '닫기',
-                        onTap: _closeDialog,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -184,11 +235,13 @@ class _PurchaseButton extends StatefulWidget {
   final int price;
   final String currency;
   final Future<void> Function() closeDialog;
+  final void Function(bool) setLoading;
   const _PurchaseButton({
     required this.item,
     required this.price,
     required this.currency,
     required this.closeDialog,
+    required this.setLoading,
   });
 
   @override
@@ -223,23 +276,37 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
     }
     return WoodButton(
       onTap: () async {
-        setState(() => _isLoading = true);
+        setState(() {
+          _isLoading = true;
+        });
+        widget.setLoading(true);
         try {
           final message = await context.read<InventoryProvider>().purchaseItem(widget.item);
           if (mounted) {
             if (message.contains("완료")) {
-              AppNotifier.showSuccess(context, message);
+              Future.delayed(Duration.zero, () {
+                AppNotifier.showSuccess(context, message);
+              });
               await widget.closeDialog();
             } else {
-              AppNotifier.showInfo(context, message);
+              Future.delayed(Duration.zero, () {
+                AppNotifier.showInfo(context, message);
+              });
             }
           }
         } catch (_) {
           if (mounted) {
-            AppNotifier.showError(context, "구매 중 오류가 발생했습니다.");
+            Future.delayed(Duration.zero, () {
+              AppNotifier.showError(context, "구매 중 오류가 발생했습니다.");
+            });
           }
         } finally {
-          if (mounted) setState(() => _isLoading = false);
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+            widget.setLoading(false);
+          }
         }
       },
       child: Row(

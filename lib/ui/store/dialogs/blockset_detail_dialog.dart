@@ -36,7 +36,7 @@ class _BlocksetDetailDialogState extends State<BlocksetDetailDialog>
   }
 
   Future<void> _closeDialog() async {
-    await _animController.reverse();
+    _animController.reverse();
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -47,6 +47,8 @@ class _BlocksetDetailDialogState extends State<BlocksetDetailDialog>
     final currency = (widget.item.currency is ItemCurrency)
         ? (widget.item.currency as ItemCurrency).name
         : 'free';
+
+    // Set info (no longer needed here, handled inline below)
 
     return WillPopScope(
       onWillPop: () async {
@@ -87,49 +89,92 @@ class _BlocksetDetailDialogState extends State<BlocksetDetailDialog>
               boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 12)],
             ),
             padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(widget.item.name ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 160,
-                  child: GridView.count(
-                    crossAxisCount: 5,
-                    mainAxisSpacing: 4,
-                    crossAxisSpacing: 4,
-                    children: (widget.item.images ?? [])
-                        .map<Widget>((img) => ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(img, fit: BoxFit.cover),
-                            ))
-                        .toList(),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(widget.item.name ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 160,
+                    child: GridView.count(
+                      crossAxisCount: 5,
+                      mainAxisSpacing: 4,
+                      crossAxisSpacing: 4,
+                      children: (widget.item.images ?? [])
+                          .map<Widget>((img) => ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(img, fit: BoxFit.cover),
+                              ))
+                          .toList(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black87)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _PurchaseButton(
-                        item: widget.item,
-                        price: price,
-                        currency: currency,
-                        onPurchased: _closeDialog,
+                  const SizedBox(height: 12),
+                  Text(desc, textAlign: TextAlign.center, style: const TextStyle(color: Colors.black87)),
+                  // --- Set Name and Effects Block (Unified with CharacterDetailDialog) ---
+                  if (widget.item.setName != null && (widget.item.setName as String).isNotEmpty)
+                    ...[
+                      Text("세트: ${widget.item.setName}",
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                    ],
+                  if (widget.item.setEffects != null &&
+                      widget.item.setEffects is Map &&
+                      (widget.item.setEffects as Map).isNotEmpty)
+                    (() {
+                      final effectLabels = {
+                        'time_limit_bonus': '제한 시간 증가',
+                        'gold_bonus': '골드 보너스',
+                        'revive': '부활 횟수',
+                        'shuffle': '섞기 증가',
+                        'hint_bonus': '힌트 추가',
+                        'bomb_bonus': '폭탄 추가',
+                        'obstacle_remove': '장애물 제거 ',
+                      };
+                      return Container(
+                        padding: const EdgeInsets.all(8),
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.black12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: (widget.item.setEffects as Map<String, dynamic>).entries.map((e) {
+                            final label = effectLabels[e.key] ?? e.key;
+                            return Text(
+                              "$label: ${e.value}",
+                              style: const TextStyle(fontSize: 13, color: Colors.black87),
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    })(),
+                  // --- End Set Name and Effects Block ---
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _PurchaseButton(
+                          item: widget.item,
+                          price: price,
+                          currency: currency,
+                          onPurchased: _closeDialog,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedDialogButton(
-                        label: '닫기',
-                        onTap: _closeDialog,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedDialogButton(
+                          label: '닫기',
+                          onTap: _closeDialog,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -166,19 +211,25 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
 
   Future<void> _handlePurchase() async {
     if (_isOwned) {
-      AppNotifier.showInfo(context, '이미 보유중인 아이템입니다.');
+      Future.delayed(Duration.zero, () {
+        AppNotifier.showInfo(context, '이미 보유중인 아이템입니다.');
+      });
       return;
     }
     setState(() => _isLoading = true);
     try {
       await context.read<InventoryProvider>().purchaseItem(widget.item);
       if (mounted) {
-        AppNotifier.showSuccess(context, '구매가 완료되었습니다.');
+        Future.delayed(Duration.zero, () {
+          AppNotifier.showSuccess(context, '구매가 완료되었습니다.');
+        });
         await widget.onPurchased();
       }
     } catch (e) {
       if (mounted) {
-        AppNotifier.showError(context, '구매 실패: $e');
+        Future.delayed(Duration.zero, () {
+          AppNotifier.showError(context, '구매 실패: $e');
+        });
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -218,10 +269,14 @@ class _PurchaseButtonState extends State<_PurchaseButton> {
           final message = await context.read<InventoryProvider>().purchaseItem(widget.item);
           if (mounted) {
             if (message.contains("완료")) {
-              AppNotifier.showSuccess(context, message);
+              Future.delayed(Duration.zero, () {
+                AppNotifier.showSuccess(context, message);
+              });
               await widget.onPurchased();
             } else {
-              AppNotifier.showInfo(context, message);
+              Future.delayed(Duration.zero, () {
+                AppNotifier.showInfo(context, message);
+              });
             }
           }
         } finally {

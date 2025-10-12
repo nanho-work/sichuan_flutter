@@ -18,10 +18,12 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
     AdBannerService.loadBannerAd(
       onLoaded: () => setState(() {}),
       onFailed: (error) => debugPrint("Banner load failed: $error"),
     );
+
     if (!sound.isPlayingBGM) {
       sound.playBGM('home_theme.mp3');
     }
@@ -51,14 +53,19 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          AdBannerService.bannerWidget(), // ✅ 상단 광고
-          const AppHeader(),               // ✅ 항상 상단에 고정
-          const Expanded(
-            child: BottomNav(),            // ✅ 하단 네비게이션 포함한 본문
+      body: Center( // ✅ 중앙 정렬
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440), // ✅ 상한선 설정
+          child: Column(
+            children: [
+              AdBannerService.bannerWidget(), // ✅ 상단 광고
+              const AppHeader(),               // ✅ 상단 고정
+              const Expanded(
+                child: BottomNav(),            // ✅ 하단 네비게이션 + 본문
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

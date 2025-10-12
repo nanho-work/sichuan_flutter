@@ -229,6 +229,9 @@ class ItemModel {
   final List<String>? thumbnails;
   final List<String>? images;
   final List<ItemLevel> levels;
+  final String? setId;
+  final String? setName;
+  final Map<String, dynamic>? setEffects;
 
   const ItemModel({
     required this.id,
@@ -244,6 +247,9 @@ class ItemModel {
     this.thumbnails,
     this.images,
     required this.levels,
+    this.setId,
+    this.setName,
+    this.setEffects,
   });
 
   /// 현재 레벨의 이미지 경로 반환 (기본 1레벨)
@@ -287,6 +293,9 @@ class ItemModel {
       thumbnails: (map['thumbnails'] as List?)?.cast<String>(),
       images: (map['images'] as List?)?.cast<String>(),
       levels: levelsJson,
+      setId: map['set_id'] as String?,
+      setName: map['set_name'] as String?,
+      setEffects: (map['set_effects'] as Map?)?.cast<String, dynamic>(),
     );
   }
 
@@ -311,6 +320,9 @@ class ItemModel {
         'thumbnails': thumbnails,
         'images': images,
         'levels': levels.map((e) => e.toMap()).toList(),
+        'set_id': setId,
+        'set_name': setName,
+        'set_effects': setEffects,
       };
 
   ItemModel copyWith({
@@ -327,6 +339,9 @@ class ItemModel {
     List<String>? thumbnails,
     List<String>? images,
     List<ItemLevel>? levels,
+    String? setId,
+    String? setName,
+    Map<String, dynamic>? setEffects,
   }) {
     return ItemModel(
       id: id ?? this.id,
@@ -342,6 +357,9 @@ class ItemModel {
       thumbnails: thumbnails ?? this.thumbnails,
       images: images ?? this.images,
       levels: levels ?? this.levels,
+      setId: setId ?? this.setId,
+      setName: setName ?? this.setName,
+      setEffects: setEffects ?? this.setEffects,
     );
   }
 }
