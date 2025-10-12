@@ -77,7 +77,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
             ),
 
           // 🔹 반투명 오버레이 (글씨 가독성)
-          Container(color: Colors.black.withOpacity(0.4)),
+          Container(color: Colors.black.withOpacity(0.2)),
 
           // 🔹 실제 인벤토리 내용
           Column(

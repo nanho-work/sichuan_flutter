@@ -100,73 +100,83 @@ class EquippedItemView extends StatelessWidget {
     );
 
     // ✅ 뷰
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        height: 240,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          image: bgData.images?.isNotEmpty == true
-              ? DecorationImage(
-                  image: AssetImage(bgData.images!.first),
-                  fit: BoxFit.cover,
-                )
-              : null,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // 왼쪽: 블록 세트 이미지
-            if (equippedBlock.equipped && blockData.thumbnails?.isNotEmpty == true)
-              Positioned(
-                left: 24,
-                bottom: 24,
-                child: SizedBox(
-                  height: 120,
-                  child: Image.asset(
-                    blockData.thumbnails!.first,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-
-            // 오른쪽: 캐릭터 이미지
-            if (equippedCharacter.equipped &&
-                charData.imagePathForLevel(equippedCharacter.upgradeLevel).isNotEmpty)
-              Positioned(
-                right: 24,
-                bottom: 0,
-                child: SizedBox(
-                  height: 180,
-                  child: Image.asset(
-                    charData.imagePathForLevel(equippedCharacter.upgradeLevel),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-
-            // 좌상단 텍스트 오버레이
-            Positioned(
-              left: 12,
-              top: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '착용 중 캐릭터: ${charData.name}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+    return Container(
+      height: 240,
+      width: double.infinity,
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              color: Colors.transparent,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '착용 중 캐릭터: ${charData.name}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.15), width: 1.5),
+                image: bgData.images?.isNotEmpty == true
+                    ? DecorationImage(
+                        image: AssetImage(bgData.images!.first),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 8,
+                    offset: Offset(2, 4),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
+                  if (equippedBlock.equipped && blockData.thumbnails?.isNotEmpty == true)
+                    Positioned(
+                      top: 24,
+                      right: 24,
+                      child: SizedBox(
+                        height: 140,
+                        child: Image.asset(
+                          blockData.thumbnails!.first,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  if (equippedCharacter.equipped &&
+                      charData.imagePathForLevel(equippedCharacter.upgradeLevel).isNotEmpty)
+                    Positioned(
+                      right: 24,
+                      bottom: 0,
+                      child: SizedBox(
+                        height: 140,
+                        child: Image.asset(
+                          charData.imagePathForLevel(equippedCharacter.upgradeLevel),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

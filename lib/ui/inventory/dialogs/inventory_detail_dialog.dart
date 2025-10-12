@@ -41,7 +41,7 @@ class _InventoryDetailDialogState extends State<InventoryDetailDialog> {
     final owned = widget.owned;
 
     return Dialog(
-      backgroundColor: Colors.grey.shade900,
+      backgroundColor: Colors.brown.shade200,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: double.infinity,
@@ -115,33 +115,32 @@ class _InventoryDetailDialogState extends State<InventoryDetailDialog> {
                             setState(() => _isLoading = true);
 
                             try {
-                            await inventoryProvider.unequipCategory(widget.item.category);
-                            await inventoryProvider.setEquipped(widget.item.id, true);
+                              await inventoryProvider.unequipCategory(widget.item.category);
+                              await inventoryProvider.setEquipped(widget.item.id, true);
 
-                            // ✅ 안전한 Navigator pop
-                            if (mounted && Navigator.canPop(context)) {
+                              // ✅ 안전한 Navigator pop
+                              if (mounted && Navigator.canPop(context)) {
                                 Navigator.pop(context);
-                            }
+                              }
                             } catch (e) {
-                            debugPrint("❌ Equip action failed: $e");
+                              debugPrint("❌ Equip action failed: $e");
                             } finally {
-                            if (mounted) setState(() => _isLoading = false);
+                              if (mounted) setState(() => _isLoading = false);
                             }
-                        },
+                          },
                   ),
-              ],
-            ),
-            const SizedBox(height: 12),
 
-            // 닫기 버튼
-            TextButton(
-              onPressed: _isLoading
-                  ? null
-                  : () => Navigator.pop(context),
-              child: const Text(
-                "닫기",
-                style: TextStyle(color: Colors.white54),
-              ),
+                const SizedBox(width: 12),
+
+                // 닫기 버튼을 같은 행에 배치
+                TextButton(
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
+                  child: const Text(
+                    "닫기",
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
