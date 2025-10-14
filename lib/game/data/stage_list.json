@@ -1,5 +1,0 @@
-{
-  "stages": [
-    { "id": "stage_001", "name": "모험의 시작", "difficulty": "easy", "unlock_at": 0, "thumbnail": "assets/stages/001.png" }
-  ]
-}

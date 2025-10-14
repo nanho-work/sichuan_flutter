@@ -1,0 +1,52 @@
+{
+  "id": "stage_005",
+  "name": "왕관의 문턱",
+  "difficulty": "hard",
+  "rows": 8,
+  "cols": 6,
+  "time_limit": 240,
+
+  "modifiers": {
+    "enable_hint": true,
+    "enable_bomb": true,
+    "enable_shuffle": true,
+    "enable_revive": true,
+    "enable_time_bonus": true,
+    "time_bonus_per_combo": 4
+  },
+
+  "objectives": { "type": "clear_all" },
+  "rewards": { "gold": 120, "gem": 3, "exp": 25 },
+
+  "tiles": {
+    "data": [
+      { "x": 1, "y": 2, "layer": 1 },
+      { "x": 2, "y": 2, "layer": 1 },
+      { "x": 3, "y": 2, "layer": 1 },
+      { "x": 4, "y": 2, "layer": 1 },
+      { "x": 1, "y": 3, "layer": 1 },
+      { "x": 4, "y": 3, "layer": 1 },
+      { "x": 1, "y": 4, "layer": 1 },
+      { "x": 4, "y": 4, "layer": 1 },
+      { "x": 1, "y": 5, "layer": 1 },
+      { "x": 2, "y": 3, "layer": 2 },
+      { "x": 3, "y": 4, "layer": 2 },
+      { "x": 2, "y": 4, "layer": 2 },
+      { "x": 3, "y": 3, "layer": 2 }
+    ]
+  },
+
+  "obstacles": {
+    "data": [
+      { "x": 3, "y": 3, "type": "ice", "durability": 3 },
+      { "x": 2, "y": 4, "type": "stone" }
+    ]
+  },
+
+  "special_tiles": {
+    "data": [
+      { "x": 2, "y": 3, "effect": "bomb" },
+      { "x": 3, "y": 4, "effect": "time_bonus" }
+    ]
+  }
+}

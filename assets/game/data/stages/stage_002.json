@@ -1,0 +1,36 @@
+{
+  "id": "stage_002",
+  "name": "숲의 입구",
+  "difficulty": "easy",
+  "rows": 8,
+  "cols": 6,
+  "time_limit": 300,
+
+  "modifiers": {
+    "enable_hint": true,
+    "enable_bomb": true,
+    "enable_shuffle": false,
+    "enable_revive": false,
+    "enable_time_bonus": true,
+    "time_bonus_per_combo": 3
+  },
+
+  "objectives": { "type": "clear_all" },
+  "rewards": { "gold": 60, "gem": 1, "exp": 12 },
+
+  "tiles": {
+    "data": [
+      { "x": 2, "y": 2, "layer": 1 },
+      { "x": 3, "y": 2, "layer": 1 },
+      { "x": 2, "y": 3, "layer": 1 },
+      { "x": 3, "y": 3, "layer": 1 },
+      { "x": 2, "y": 4, "layer": 1 },
+      { "x": 3, "y": 4, "layer": 1 },
+      { "x": 1, "y": 3, "layer": 1 },
+      { "x": 4, "y": 3, "layer": 1 }
+    ]
+  },
+
+  "obstacles": { "data": [] },
+  "special_tiles": { "data": [{ "x": 3, "y": 3, "effect": "time_bonus" }] }
+}

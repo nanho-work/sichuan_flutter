@@ -9,29 +9,37 @@ import 'overlays/game_over_dialog.dart';
 import '../../managers/sound_manager.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+  final String stageFilePath; // ✅ 추가
+
+  const GameScreen({super.key, required this.stageFilePath});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
+  late GameProvider _gameProvider;
+
   @override
   void initState() {
     super.initState();
-    // 스테이지 로드
     Future.microtask(() async {
-      await context.read<GameProvider>().loadStage('lib/game/data/stage_001.json', context);
-      // BGM 전환
+      await context.read<GameProvider>().loadStage(widget.stageFilePath, context);
       SoundManager().playBGM('game_theme.mp3');
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameProvider = Provider.of<GameProvider>(context, listen: false);
   }
 
   @override
   void dispose() {
     // 게임 끝 → 홈 BGM 복귀 (원하면)
     SoundManager().playBGM('home_theme.mp3');
-    context.read<GameProvider>().disposeTimer();
+    _gameProvider.disposeTimer();
     super.dispose();
   }
 

@@ -14,11 +14,9 @@ class StoreScreen extends StatefulWidget {
 class _StoreScreenState extends State<StoreScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
 
-  static const tabs = [
-    Tab(text: '캐릭터'),
-    Tab(text: '블럭'),
-    Tab(text: '배경'),
-  ];
+  static const tabImage = 'assets/images/tabbar_bg.png';
+
+  late final List<Widget> tabs;
 
   static const categories = [
     ItemCategory.character,
@@ -29,7 +27,51 @@ class _StoreScreenState extends State<StoreScreen> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    tabs = List.generate(3, (index) {
+      return Tab(
+        child: AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, child) {
+            bool isSelected = _tabController.index == index;
+            String text;
+            if (index == 0) {
+              text = '캐릭터';
+            } else if (index == 1) {
+              text = '블럭';
+            } else {
+              text = '배경';
+            }
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(tabImage),
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.transparent : Colors.black.withOpacity(0.4), // dark overlay only if not selected
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    text,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    });
     // 최초 로딩
     Future.microtask(() => context.read<ItemProvider>().refresh());
   }
@@ -53,19 +95,27 @@ class _StoreScreenState extends State<StoreScreen> with TickerProviderStateMixin
                 // 탭바
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1C2A3A).withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  // Remove background image, just keep margin and radius for layout
                   child: TabBar(
                     controller: _tabController,
                     tabs: tabs,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    isScrollable: false, // 가로 전체 균등 분배
+                    labelPadding: EdgeInsets.zero, // ← 기본 좌우 패딩 제거 (가장 중요!)
+                    indicatorPadding: EdgeInsets.zero, // ← 인디케이터 여백 제거
+                    indicatorSize: TabBarIndicatorSize.tab, // 탭 크기에 딱 맞게
                     indicator: BoxDecoration(
-                      color: const Color(0xFF2F4E6B),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white,
+                    overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                      (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.selected)) return Colors.transparent;
+                        return Colors.black.withOpacity(0.4);
+                      },
+                    ),
+                  )
                 ),
 
                 // 컨텐츠

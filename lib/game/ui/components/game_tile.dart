@@ -15,45 +15,57 @@ class GameTile extends StatelessWidget {
     final engine = gp.engine;
     final isActive = engine.isTopmostTile(tile); // ✅ 클릭 가능 여부 확인
 
-    final color = tile.cleared
+    final baseColor = tile.cleared
         ? Colors.transparent
-        : (isActive
-            ? Colors.blueGrey.shade700.withOpacity(0.9)
-            : Colors.blueGrey.shade900.withOpacity(0.4)); // 어둡게 표시
+        : Colors.blueGrey.shade700.withOpacity(0.9);
+    final activeColor = tile.cleared
+        ? Colors.transparent
+        : Colors.blueGrey.shade700.withOpacity(0.9);
+    final inactiveColor = tile.cleared
+        ? Colors.transparent
+        : Colors.blueGrey.shade900.withOpacity(0.4);
 
-    return AnimatedContainer(
+    final color = selected
+        ? Colors.blueGrey.shade700.withOpacity(1.0)
+        : (isActive ? activeColor : inactiveColor);
+
+    final border = selected
+        ? Border.all(color: Colors.amberAccent, width: 2)
+        : (isActive
+            ? Border.all(color: Colors.white24, width: 1)
+            : Border.all(color: Colors.transparent, width: 0));
+
+    final scale = selected ? 1.08 : 1.0;
+
+    return AnimatedScale(
+      scale: scale,
       duration: const Duration(milliseconds: 120),
-      margin: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: selected
-              ? Colors.amberAccent
-              : isActive
-                  ? Colors.white24
-                  : Colors.white10,
-          width: selected ? 2 : 1,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        margin: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          border: border,
         ),
-      ),
-      alignment: Alignment.center,
-      child: tile.cleared
-          ? const SizedBox.shrink()
-          : Opacity(
-              opacity: isActive ? 1.0 : 0.5,
-              child: tile.imagePath != null
-                  ? Image.asset(
-                      tile.imagePath!,
-                      fit: BoxFit.cover,
-                    )
-                  : Text(
-                      tile.type,
-                      style: TextStyle(
-                        color: isActive ? Colors.white : Colors.white38,
-                        fontWeight: FontWeight.bold,
+        alignment: Alignment.center,
+        child: tile.cleared
+            ? const SizedBox.shrink()
+            : Opacity(
+                opacity: isActive ? 1.0 : 0.5,
+                child: tile.imagePath != null
+                    ? Image.asset(
+                        tile.imagePath!,
+                        fit: BoxFit.fill,
+                      )
+                    : Text(
+                        tile.type,
+                        style: TextStyle(
+                          color: isActive ? Colors.white : Colors.white38,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-            ),
+              ),
+      ),
     );
   }
 }

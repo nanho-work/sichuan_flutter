@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async' show unawaited;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/item_model.dart';
 import '../models/user_item_model.dart';
@@ -21,6 +23,7 @@ import '../main.dart';
 
 class InventoryProvider extends ChangeNotifier {
   final InventoryService _service = InventoryService();
+  ItemProvider? itemProvider;
   List<UserItemModel> _inventory = [];
   bool _isLoading = false;
 
@@ -38,22 +41,30 @@ class InventoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 비동기 Firestore 호출은 unawaited로 백그라운드 처리
-      unawaited(_service.getInventory(user.uid).then((loadedInventory) {
+      final prefs = await SharedPreferences.getInstance();
+      final localTs = prefs.getInt('inventory_cache_timestamp') ?? 0;
+      final localDate = DateTime.fromMillisecondsSinceEpoch(localTs);
+
+      // 🔹 Firestore의 마지막 수정 시간 확인
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final serverTs = (userDoc.data()?['inventory_last_sync'] as Timestamp?)?.toDate() ?? DateTime(2000);
+
+      if (serverTs.isAfter(localDate)) {
+        // ✅ 서버 데이터가 최신 → Firestore 호출
+        final loadedInventory = await _service.getInventory(user.uid);
         _inventory = loadedInventory;
-        _isLoading = false;
-        notifyListeners();
-      }).catchError((e, stacktrace) {
-        debugPrint("❌ [InventoryProvider.loadInventory] 실패: $e");
-        debugPrint("Stacktrace: $stacktrace");
-        _inventory = [];
-        _isLoading = false;
-        notifyListeners();
-      }));
-    } catch (e, stacktrace) {
+        await _cacheInventoryLocally(loadedInventory);
+        debugPrint("📡 Firestore로부터 최신 인벤토리 로드");
+      } else {
+        // ✅ 캐시가 최신 → 캐시 사용
+        await _loadInventoryFromCache();
+        debugPrint("💾 캐시 인벤토리 사용 (최신)");
+      }
+    } catch (e, stack) {
       debugPrint("❌ [InventoryProvider.loadInventory] 실패: $e");
-      debugPrint("Stacktrace: $stacktrace");
-      _inventory = [];
+      debugPrint("$stack");
+      await _loadInventoryFromCache(); // 실패 시 캐시 폴백
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
@@ -407,6 +418,42 @@ class InventoryProvider extends ChangeNotifier {
       }));
     } catch (e) {
       debugPrint("❌ [applySetEffects] 실패: $e");
+    }
+  }
+}
+
+// =======================================================
+// 💾 인벤토리 캐싱 (SharedPreferences)
+// =======================================================
+
+extension InventoryProviderCache on InventoryProvider {
+  // 인벤토리 캐시 저장
+  Future<void> _cacheInventoryLocally(List<UserItemModel> items) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = items.map((e) => e.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+      await prefs.setString('inventory_cache', jsonString);
+      await prefs.setInt('inventory_cache_timestamp', DateTime.now().millisecondsSinceEpoch);
+    } catch (e) {
+      debugPrint("❌ [InventoryProvider._cacheInventoryLocally] 실패: $e");
+    }
+  }
+
+  // 인벤토리 캐시 불러오기
+  Future<void> _loadInventoryFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('inventory_cache');
+      if (jsonString != null && jsonString.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(jsonString);
+        _inventory = decoded
+            .map<UserItemModel>((e) => UserItemModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("❌ [InventoryProvider._loadInventoryFromCache] 실패: $e");
     }
   }
 }

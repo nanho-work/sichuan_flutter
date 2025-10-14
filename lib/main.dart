@@ -53,12 +53,30 @@ Future<void> main() async {
 
   final user = FirebaseAuth.instance.currentUser;
 
+  // Create single instances of ItemProvider and InventoryProvider to preload data
+  final itemProvider = ItemProvider();
+  await itemProvider.loadAllItems(); // Preload items before runApp
+
+  final inventoryProvider = InventoryProvider();
+  // Set itemProvider to inventoryProvider before loading inventory to ensure proper linkage
+  inventoryProvider.itemProvider = itemProvider;
+  await inventoryProvider.loadInventory(); // Preload inventory before runApp
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
-        ChangeNotifierProvider(create: (_) => ItemProvider()),
-        ChangeNotifierProvider(create: (_) => InventoryProvider()..loadInventory()),
+        // Use the preloaded instance of ItemProvider to prevent reinitialization
+        ChangeNotifierProvider.value(value: itemProvider),
+        ChangeNotifierProxyProvider<ItemProvider, InventoryProvider>(
+          // Use the preloaded instance of InventoryProvider to prevent reinitialization
+          create: (_) => inventoryProvider,
+          update: (_, itemProv, inv) {
+            final invProvider = inv ?? inventoryProvider;
+            invProvider.itemProvider = itemProv;
+            return invProvider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => GameProvider()),
       ],
       child: KoofyApp(isLoggedIn: user != null),

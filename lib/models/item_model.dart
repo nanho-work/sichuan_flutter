@@ -254,15 +254,25 @@ class ItemModel {
 
   /// 현재 레벨의 이미지 경로 반환 (기본 1레벨)
   String imagePathForLevel(int level) {
-    if (levels == null || levels!.isEmpty) return '';
-    final match = levels!.where((lv) => lv.level == level);
+    if (levels.isEmpty) return '';
+    final match = levels.where((lv) => lv.level == level);
     if (match.isEmpty) {
-      // ✅ level이 없을 경우 첫번째 이미지라도 리턴
-      final fallback = levels!.first.imagePath ?? '';
-      return fallback;
+      return levels.first.imagePath;
     }
-    return match.first.imagePath ?? '';
+    return match.first.imagePath;
   }
+  /// 빈 객체를 반환하는 편의 생성자
+  factory ItemModel.empty() => ItemModel(
+        id: '',
+        name: '',
+        category: ItemCategory.unknown,
+        description: '',
+        rarity: ItemRarity.common,
+        currency: ItemCurrency.free,
+        available: true,
+        price: 0,
+        levels: const [],
+      );
 
   /// 해당 레벨의 효과 반환 (절대값 기준)
   ItemEffects effectsForLevel(int level) {
@@ -362,6 +372,12 @@ class ItemModel {
       setEffects: setEffects ?? this.setEffects,
     );
   }
+
+  /// Standard JSON serialization helper: converts this model to JSON.
+  Map<String, dynamic> toJson() => toMap();
+
+  /// Standard JSON serialization helper: creates model from JSON.
+  factory ItemModel.fromJson(Map<String, dynamic> json) => ItemModel.fromMap(json);
 }
 
 /// 유틸: JSON 배열을 모델 리스트로 변환

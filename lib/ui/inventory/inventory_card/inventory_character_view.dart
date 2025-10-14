@@ -77,7 +77,10 @@ class InventoryCharacterView extends StatelessWidget {
                   Container(
                     color: Colors.black54,
                     alignment: Alignment.center,
-                    child: const Text("미보유", style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      "미보유",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 if (isEquipped)
                   Positioned(

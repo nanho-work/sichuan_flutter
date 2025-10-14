@@ -41,8 +41,8 @@ class GameBoard extends StatelessWidget {
                     for (int x = 0; x < cols; x++) 
                       if (state.layersByRC[l][y][x] != null && !state.layersByRC[l][y][x]!.cleared)
                         Positioned(
-                          top: y * cellHeight - (l * 5),
-                          left: x * cellWidth - (l * 5),
+                          top: y * cellHeight - (l * 7),
+                          left: x * cellWidth - (l * 7),
                           width: cellWidth,
                           height: cellHeight,
                           child: Builder(

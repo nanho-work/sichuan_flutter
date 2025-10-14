@@ -1,7 +1,7 @@
 [
   {
     "id": "block_fruit",
-    "name": "과일 블록 셋트",
+    "name": "과일 블록",
     "category": "block_set",
     "description": "상큼한 과일로 꾸며진 블록 셋트! 플레이 화면을 달콤하게 만들어줍니다.",
     "rarity": "common",
@@ -34,7 +34,7 @@
   ,
   {
     "id": "block_toko",
-    "name": "토코 블록 셋트",
+    "name": "토코 블록",
     "category": "block_set",
     "description": "토코의 상점",
     "rarity": "rare",
@@ -60,6 +60,37 @@
       "assets/icons/toko/toko_block_10.png",
       "assets/icons/toko/toko_block_11.png",
       "assets/icons/toko/toko_block_12.png"
+    ]
+  }
+  ,
+  {
+    "id": "block_bori",
+    "name": "보리 블록",
+    "category": "block_set",
+    "description": "보리의 무구",
+    "rarity": "rare",
+    "currency": "gold",
+    "available": true,
+    "price": 1200,
+    "count": 12,
+    "set_id": "set_bori",
+    "asset_path_prefix": "assets/icons/bori/",
+    "thumbnails": [
+      "assets/icons/bori/bori_block_set.png"
+    ],
+    "images": [
+      "assets/icons/bori/bori_block_01.png",
+      "assets/icons/bori/bori_block_02.png",
+      "assets/icons/bori/bori_block_03.png",
+      "assets/icons/bori/bori_block_04.png",
+      "assets/icons/bori/bori_block_05.png",
+      "assets/icons/bori/bori_block_06.png",
+      "assets/icons/bori/bori_block_07.png",
+      "assets/icons/bori/bori_block_08.png",
+      "assets/icons/bori/bori_block_09.png",
+      "assets/icons/bori/bori_block_10.png",
+      "assets/icons/bori/bori_block_11.png",
+      "assets/icons/bori/bori_block_12.png"
     ]
   }
 ]

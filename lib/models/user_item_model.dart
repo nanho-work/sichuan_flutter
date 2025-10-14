@@ -47,6 +47,26 @@ class UserItemModel {
       'set_id': setId,
     };
   }
+
+  factory UserItemModel.fromMap(Map<String, dynamic> map) {
+    return UserItemModel(
+      uid: map['uid'] ?? '',
+      itemId: map['item_id'] ?? '',
+      category: map['category'] ?? '',
+      equipped: map['equipped'] ?? false,
+      source: map['source'] ?? 'shop',
+      upgradeLevel: map['upgrade_level'] ?? 1,
+      ownedAt: (map['owned_at'] is Timestamp)
+          ? (map['owned_at'] as Timestamp).toDate()
+          : DateTime.tryParse(map['owned_at']?.toString() ?? '') ?? DateTime.now(),
+      setId: map.containsKey('set_id') ? map['set_id'] as String? : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => toMap();
+
+  factory UserItemModel.fromJson(Map<String, dynamic> json) => UserItemModel.fromMap(json);
+
   UserItemModel copyWith({
     String? uid,
     String? itemId,

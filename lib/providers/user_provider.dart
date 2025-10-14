@@ -46,4 +46,11 @@ class UserProvider extends ChangeNotifier {
     await _userService.restoreEnergyViaGem(uid, gemCost);
     await loadUser();
   }
+
+  Future<void> updateGold(int newGold) async {
+    if (_user == null) return;
+    await FirebaseFirestore.instance.collection('users').doc(_user!.uid).update({'gold': newGold});
+    _user = _user!.copyWith({'gold': newGold});
+    notifyListeners();
+  }
 }

@@ -50,6 +50,7 @@ flutter:
     - assets/icons/
     - assets/icons/fruit/
     - assets/icons/toko/
+    - assets/icons/bori/
     - assets/sounds/bgm/
     - assets/sounds/sfx/
     - assets/images/characters/
@@ -57,11 +58,14 @@ flutter:
     - assets/images/buttons/
     - assets/images/backgrounds/
     - assets/images/dialogs/
+    - assets/images/stages/
     - assets/data/items_characters.json
     - assets/data/items_blocks.json
     - assets/data/items_backgrounds.json
     - assets/data/item_sets.json
-    - lib/game/data/stage_001.json
+    - assets/game/data/stage_index.json
+    - assets/game/data/stages/
+
     
     
 

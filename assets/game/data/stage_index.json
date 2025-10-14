@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "total_stages": 5,
+  "stages": [
+    {
+      "id": "stage_001",
+      "name": "모험의 시작",
+      "file_path": "assets/game/data/stages/stage_001.json",
+      "thumbnail": "assets/images/stages/thumb_001.png",
+      "difficulty": "easy",
+      "unlocked": true,
+      "unlock_condition": null,
+      "rewards": {
+        "gold": 50,
+        "gem": 1,
+        "exp": 10
+      },
+      "description": "6개의 블럭으로 구성된 첫 번째 튜토리얼 스테이지입니다. 중앙부에 단순 배치로 쉽게 클리어 가능합니다."
+    },
+    {
+      "id": "stage_002",
+      "name": "숲의 입구",
+      "file_path": "assets/game/data/stages/stage_002.json",
+      "thumbnail": "assets/images/stages/thumb_002.png",
+      "difficulty": "easy",
+      "unlocked": false,
+      "unlock_condition": "clear:stage_001",
+      "rewards": {
+        "gold": 60,
+        "gem": 1,
+        "exp": 12
+      },
+      "description": "중앙과 주변부에 약간의 블럭이 추가되어 공간이 좁아진 스테이지입니다."
+    },
+    {
+      "id": "stage_003",
+      "name": "고요한 협곡",
+      "file_path": "assets/game/data/stages/stage_003.json",
+      "thumbnail": "assets/images/stages/thumb_003.png",
+      "difficulty": "normal",
+      "unlocked": false,
+      "unlock_condition": "clear:stage_002",
+      "rewards": {
+        "gold": 70,
+        "gem": 2,
+        "exp": 15
+      },
+      "description": "좌우 균형 잡힌 블럭 구성으로 경로를 고려해야 하는 첫 스테이지입니다."
+    },
+    {
+      "id": "stage_004",
+      "name": "잊혀진 폐허",
+      "file_path": "assets/game/data/stages/stage_004.json",
+      "thumbnail": "assets/images/stages/thumb_004.png",
+      "difficulty": "normal",
+      "unlocked": false,
+      "unlock_condition": "clear:stage_003",
+      "rewards": {
+        "gold": 90,
+        "gem": 2,
+        "exp": 18
+      },
+      "description": "층이 2개로 구성되어 있으며, 블럭 제거 순서를 신중히 고려해야 합니다."
+    },
+    {
+      "id": "stage_005",
+      "name": "왕관의 문턱",
+      "file_path": "assets/game/data/stages/stage_005.json",
+      "thumbnail": "assets/images/stages/thumb_005.png",
+      "difficulty": "hard",
+      "unlocked": false,
+      "unlock_condition": "clear:stage_004",
+      "rewards": {
+        "gold": 120,
+        "gem": 3,
+        "exp": 25
+      },
+      "description": "제한시간이 짧고, 층이 겹쳐 있는 복합 스테이지입니다."
+    }
+  ]
+}
