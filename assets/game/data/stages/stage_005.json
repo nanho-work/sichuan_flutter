@@ -27,19 +27,24 @@
       { "x": 1, "y": 3, "layer": 1 },
       { "x": 4, "y": 3, "layer": 1 },
       { "x": 1, "y": 4, "layer": 1 },
-      { "x": 4, "y": 4, "layer": 1 },
-      { "x": 1, "y": 5, "layer": 1 },
+      { "x": 4, "y": 4, "layer": 2 },
+      { "x": 1, "y": 5, "layer": 2 },
       { "x": 2, "y": 3, "layer": 2 },
       { "x": 3, "y": 4, "layer": 2 },
-      { "x": 2, "y": 4, "layer": 2 },
-      { "x": 3, "y": 3, "layer": 2 }
+      { "x": 2, "y": 4, "layer": 2 }
     ]
   },
 
   "obstacles": {
     "data": [
-      { "x": 3, "y": 3, "type": "ice", "durability": 3 },
-      { "x": 2, "y": 4, "type": "stone" }
+      { "x": 0, "y": 0, "type": "rock", "durability": 3 },
+      { "x": 1, "y": 0, "type": "bush" },
+      { "x": 2, "y": 0, "type": "tree" },
+      { "x": 3, "y": 0, "type": "box" },
+      { "x": 4, "y": 0, "type": "ice", "durability": 3 },
+      { "x": 5, "y": 0, "type": "crystal" },
+      { "x": 0, "y": 1, "type": "stone" },
+      { "x": 1, "y": 1, "type": "sword" }
     ]
   },
 

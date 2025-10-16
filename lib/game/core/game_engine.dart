@@ -13,7 +13,11 @@ class GameEngine {
   final Set<Tile> _topmostCache = {};
 
   // ✅ 블럭 이미지 목록도 함께 받도록 수정
-  Future<void> init(StageModel stage, List<String> equippedBlockImages) async {
+  Future<void> init(
+    StageModel stage,
+    List<String> equippedBlockImages, {
+    String? backgroundImage,
+  }) async {
     final maxLayer = stage.tiles.fold<int>(1, (m, t) => max(m, t.layer));
 
     debugPrint("🧩 Initializing GameEngine for stage: id=${stage.id}, name=${stage.name}");
@@ -44,37 +48,56 @@ class GameEngine {
     // ✅ 착용 블럭 기반 짝 및 이미지 경로 지정
     _assignPairs(equippedBlockImages);
 
+    // ✅ 가시 레이어(시각적으로 보이는 블럭만) 기준 projectedLayer 생성
+    final _projectedLayer = List.generate(
+      stage.rows,
+      (y) => List.generate(stage.cols, (x) {
+        // 장애물 우선
+        final hasObstacle = stage.obstacles.any(
+          (o) => o.x == x && o.y == y && o.durability > 0,
+        );
+        if (hasObstacle) return 'obstacle';
+
+        // 최상단 타일 가져오기
+        for (int l = state.layersByRC.length - 1; l >= 0; l--) {
+          final t = state.layersByRC[l][y][x];
+          if (t != null && !t.cleared) return t;
+        }
+        return null;
+      }),
+    );
+
     // Pathfinder 초기화
     _finder = Pathfinder(
       rows: stage.rows,
       cols: stage.cols,
       isBlocked: (x, y) {
+        // 보드 경계 밖은 차단 아님
+        if (x < 0 || x >= stage.cols || y < 0 || y >= stage.rows) return false;
+
+        // 선택된 타일은 경로로 허용
         final a = state.selectedA;
         final b = state.selectedB;
-
-        // 선택된 타일은 통로로 허용
-        if ((a?.x == x && a?.y == y) || (b?.x == x && b?.y == y)) return false;
-
-        // 최상단 타일이 남아있으면 막힘
-        for (int l = state.layersByRC.length - 1; l >= 0; l--) {
-          final t = state.layersByRC[l][y][x];
-          if (t != null && !t.cleared) return true;
+        if ((a?.x == x && a?.y == y) || (b?.x == x && b?.y == y)) {
+          return false;
         }
 
-        // 장애물 검사
-        final hasObs = stage.obstacles.any(
+        // 장애물 존재 여부
+        final hasObstacle = stage.obstacles.any(
           (o) => o.x == x && o.y == y && o.durability > 0,
         );
-        return hasObs;
-      },
-      layerGetter: (x, y) {
-        // 가장 위에 남아 있는 타일의 레이어를 반환 (없으면 0)
+        if (hasObstacle) return true;
+
+        // 현재 레이어에서 미클리어 타일이 존재하면 막힘
         for (int l = state.layersByRC.length - 1; l >= 0; l--) {
           final t = state.layersByRC[l][y][x];
-          if (t != null && !t.cleared) return l + 1;
+          if (t != null && !t.cleared) {
+            return true;
+          }
         }
-        return 0;
+        return false; // 비어있으면 통로
       },
+      layerGetter: (x, y) => 0, // 단일 레이어 기반
     );
 
     refreshTopmostTiles();
@@ -167,6 +190,17 @@ class GameEngine {
 
   // ✅ 선택 로직
   bool select(Tile t) {
+    // 🚫 이미 cleared 되었거나 위에 블럭/장애물 있으면 무시
+    if (t.cleared || !isTopmost(t)) return false;
+
+    // 🚫 장애물 위의 타일은 선택 불가
+    final hasObs = state.stage.obstacles.any(
+      (o) => o.x == t.x && o.y == t.y && o.durability > 0,
+    );
+    if (hasObs) return false;
+
+    debugPrint("🎯 select: Tile selected at (${t.x},${t.y}), layer ${t.layer}, type '${t.type}'");
+    
     debugPrint("🎯 select: Tile selected at (${t.x},${t.y}), layer ${t.layer}, type '${t.type}'");
     // 🚫 Same-tile double tap → toggle/deselect
     if (state.selectedA != null && identical(state.selectedA, t)) {
@@ -236,9 +270,10 @@ class GameEngine {
           "using '${typeMatch ? a.type : a.imagePath}' as key");
     }
 
-    final canConnect = _finder.canConnect(a, b);
-    debugPrint("🧭 Pathfinder.canConnect: $canConnect");
-    if (canConnect) {
+    final result = _finder.canConnectAndPath(a, b);
+    debugPrint("🧭 Pathfinder.canConnectAndPath: ${result.canConnect}");
+    if (result.canConnect) {
+      debugPrint("🗺 Path: ${result.path}");
       a.cleared = true;
       b.cleared = true;
       state.selectedA = null;

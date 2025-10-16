@@ -46,6 +46,24 @@ class UserService {
         'source': 'default',
         'upgrade_level': 1,
       });
+      
+      // ✅ 기본 블록 지급
+      await usersRef.collection('user_items').doc('block_fruit').set({
+        'item_id': 'block_fruit',
+        'category': 'block_set',
+        'owned_at': DateTime.now(),
+        'equipped': true,
+        'source': 'default',
+      });
+
+      // ✅ 기본 배경 지급
+      await usersRef.collection('user_items').doc('bg_basic').set({
+        'item_id': 'bg_basic',
+        'category': 'background',
+        'owned_at': DateTime.now(),
+        'equipped': true,
+        'source': 'default',
+      });
 
       await usersRef.collection('energy_transactions').add({
         'type': 'init',
@@ -54,6 +72,15 @@ class UserService {
       });
 
       await usersRef.collection('user_effects_cache').doc('cache').set({
+        'effects': {},
+        'updated_at': DateTime.now(),
+      });
+
+      // ✅ 인벤토리 캐시 자동 생성 (최초 로그인 시)
+      final itemsSnapshot = await usersRef.collection('user_items').get();
+      final items = itemsSnapshot.docs.map((doc) => doc.data()).toList();
+      await usersRef.collection('user_effects_cache').doc('cache').set({
+        'items': items,
         'effects': {},
         'updated_at': DateTime.now(),
       });

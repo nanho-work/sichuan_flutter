@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart'; // For navigatorKey.currentContext
+import 'package:sichuan_flutter/main.dart';
 
 import '../core/game_engine.dart';
 import '../core/game_state.dart';
@@ -15,25 +17,82 @@ import '../models/game_result.dart';
 import '../../models/item_model.dart';
 import '../../models/user_item_model.dart';
 
+
 import '../../providers/inventory_provider.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/user_provider.dart';
+
+// ========================================================================
+// 📘 GameProvider Overview
+// ------------------------------------------------------------------------
+// 1. 🎮 스테이지 로드 및 게임 시작
+// 2. 🧩 타일 선택 처리
+// 3. ⏰ 타이머 관리
+// 4. 💀 게임 종료 및 보상 처리
+// 5. 🧾 보상 반영 및 기록 저장
+// ========================================================================
 
 /// 게임 진행/상태를 관리하는 Provider
 class GameProvider extends ChangeNotifier {
   final GameEngine _engine = GameEngine();
   Timer? _timer;
 
+  List<List<Tile?>>? _projectedLayer;
+  List<List<Tile?>>? get projectedLayer => _projectedLayer;
+
+  String? _lastStagePath; // ✅ 마지막 스테이지 파일 경로 저장
+
   // 시작/종료 시각
   DateTime? _startedAt;
+
+  String? _backgroundImage;
+  String? get backgroundImage => _backgroundImage;
 
   GameEngine get engine => _engine;
   GameState? get state => _engine.state;
 
-  // ====== 공개 API ======
+  void _buildProjectedLayer() {
+    final st = _engine.state;
+    if (st == null) {
+      debugPrint("⚠️ Game state is null; cannot build projected layer");
+      _projectedLayer = null;
+      return;
+    }
+    final layers = st.layersByRC;
+    if (layers.isEmpty) {
+      debugPrint("⚠️ layersByRC is empty; cannot build projected layer");
+      _projectedLayer = null;
+      return;
+    }
+    final height = layers[0].length;
+    final width = layers[0][0].length;
+    List<List<Tile?>> pLayer = List.generate(height, (_) => List<Tile?>.filled(width, null));
+
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        Tile? selectedTile;
+        for (int layerIndex = layers.length - 1; layerIndex >= 0; layerIndex--) {
+          final tile = layers[layerIndex][y][x];
+          if (tile != null && !tile.cleared) {
+            selectedTile = tile;
+            break;
+          }
+        }
+        pLayer[y][x] = selectedTile;
+        debugPrint("ProjectedLayer[$y][$x] = ${selectedTile != null ? 'Tile(x=${selectedTile.x}, y=${selectedTile.y}, cleared=${selectedTile.cleared})' : 'null'}");
+      }
+    }
+    _projectedLayer = pLayer;
+    debugPrint("🔹 Projected layer built with size ${height}x${width}");
+  }
+
+  // ========================================================================
+  //     🎮 스테이지 로드 및 게임 시작
+  // ========================================================================
 
   /// JSON(assets 경로)에서 스테이지 로드 + 엔진 초기화 + 타이머 시작
   Future<void> loadStage(String assetJsonPath, BuildContext context) async {
+    _lastStagePath = assetJsonPath; // ✅ 경로 기록
     // 1️⃣ 스테이지 로드
     final raw = await rootBundle.loadString(assetJsonPath);
     final map = json.decode(raw) as Map<String, dynamic>;
@@ -83,20 +142,51 @@ class GameProvider extends ChangeNotifier {
     debugPrint("🔹 Block images count: ${blockImages.length}");
     debugPrint("🔹 Final block images list: $blockImages");
 
+    // === 새로 추가된 배경 이미지 처리 ===
+    final equippedBackground = inv.inventory.firstWhere(
+      (e) => e.category == 'background' && e.equipped == true,
+      orElse: () => UserItemModel.empty(),
+    );
+    debugPrint("🔹 Equipped background found: itemId=${equippedBackground.itemId}, equipped=${equippedBackground.equipped}");
+
+    if (equippedBackground.itemId.isNotEmpty) {
+      final bgModel = itemProvider.items.firstWhere(
+        (m) => m.id == equippedBackground.itemId,
+        orElse: () => ItemModel.empty(),
+      );
+      String? bgImagePath;
+      if (bgModel.images != null && bgModel.images!.isNotEmpty) {
+        bgImagePath = bgModel.images!.first;
+      }
+      _backgroundImage = bgImagePath;
+      debugPrint("🔹 Background image loaded: $_backgroundImage");
+    } else {
+      _backgroundImage = null;
+      debugPrint("⚠️ No equipped background found (itemId is empty)");
+    }
+
     // 6️⃣ 게임 엔진 초기화
     debugPrint("🔹 Initializing game engine with stage and block images");
-    await _engine.init(stage, blockImages.cast<String>());
+    await _engine.init(stage, blockImages.cast<String>(), backgroundImage: backgroundImage);
     debugPrint("🔹 Game engine initialized");
+
+    _buildProjectedLayer();
 
     // 7️⃣ 시작 시간 처리
     _startedAt = DateTime.now();
     _engine.state.timeLeft = stage.timeLimit;
 
-    // 8️⃣ 타이머 시작
+    // ========================================================================
+    //     ⏰ 타이머 시작
+    // ========================================================================
     _startTimer();
 
     notifyListeners();
   }
+
+  // ========================================================================
+  //     🧩 타일 선택 처리
+  // ========================================================================
 
   /// 타일 클릭
   void selectTile(Tile tile) {
@@ -104,11 +194,18 @@ class GameProvider extends ChangeNotifier {
     if (changed) {
       // 클리어/실패 판정 후 종료 처리
       if (_engine.state.cleared || _engine.state.failed) {
+        // ========================================================================
+        //     💀 게임 종료 처리
+        // ========================================================================
         _onGameEnd();
       }
       notifyListeners();
     }
   }
+
+  // ========================================================================
+  //     ⏰ 타이머 관리
+  // ========================================================================
 
   /// 타이머/리소스 정리
   void disposeTimer() {
@@ -129,11 +226,18 @@ class GameProvider extends ChangeNotifier {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       _engine.tick();
       if (_engine.state.cleared || _engine.state.failed) {
+        // ========================================================================
+        //     💀 게임 종료 처리
+        // ========================================================================
         _onGameEnd();
       }
       notifyListeners();
     });
   }
+
+  // ========================================================================
+  //     💀 게임 종료 및 보상 처리
+  // ========================================================================
 
   /// 게임 종료 처리(보상 계산 + Firestore 반영)
   Future<void> _onGameEnd() async {
@@ -172,7 +276,9 @@ class GameProvider extends ChangeNotifier {
     final failed = st.failed;
     final goldEarned = failed ? (finalGold * 0.2).round() : finalGold;
 
-    // === Firestore 반영 ===
+    // ========================================================================
+    //     🧾 Firestore 보상 및 기록 저장
+    // ========================================================================
     await _saveRewardsAndRecord(
       uid: user.uid,
       gold: goldEarned,
@@ -202,6 +308,13 @@ class GameProvider extends ChangeNotifier {
 
     // 최신 유저 데이터 동기화
     await userProvider.loadUser();
+
+    // === 스테이지 클리어 추가 로직 ===
+    if (cleared) {
+      await _unlockNextStage(stage.id);
+      await _saveClearTime(stage.id, _playedSeconds());
+      await _showClearDialog(stage, goldEarned, baseGem, baseExp);
+    }
 
     notifyListeners();
   }
@@ -313,6 +426,10 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
+  // ========================================================================
+  //     🧾 보상 반영 및 기록 저장
+  // ========================================================================
+
   /// 보상 반영 + 기록 저장
   Future<void> _saveRewardsAndRecord({
     required String uid,
@@ -356,5 +473,155 @@ class GameProvider extends ChangeNotifier {
         );
       }
     });
+  }
+
+  // ========================================================================
+  //     🔓 다음 스테이지 언락
+  // ========================================================================
+  /// 현재 스테이지를 클리어한 뒤, 다음 스테이지를 언락 처리
+  Future<void> _unlockNextStage(String clearedStageId) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    // 1. index.json 로드 (경로 변경)
+    final raw = await rootBundle.loadString('assets/game/data/index.json');
+    final List<dynamic> stageList = json.decode(raw);
+    // 2. 현재 스테이지의 다음 스테이지 찾기
+    int idx = stageList.indexWhere((e) => e['id'] == clearedStageId);
+    if (idx == -1) return; // 못 찾으면 종료
+    if (idx + 1 >= stageList.length) return; // 마지막 스테이지면 종료
+    final nextStage = stageList[idx + 1];
+    final nextStageId = nextStage['id'];
+    // 3. Firestore의 stage_progress/{uid} 문서 갱신
+    final db = FirebaseFirestore.instance;
+    final docRef = db.collection('stage_progress').doc(uid);
+    await db.runTransaction((tx) async {
+      final docSnap = await tx.get(docRef);
+      Map<String, dynamic> data = {};
+      if (docSnap.exists) {
+        data = Map<String, dynamic>.from(docSnap.data() ?? {});
+      }
+      // 현재 클리어 처리
+      data[clearedStageId] = {
+        ...(data[clearedStageId] ?? {}),
+        'cleared': true,
+        'unlocked': true,
+      };
+      // 다음 스테이지 언락
+      data[nextStageId] = {
+        ...(data[nextStageId] ?? {}),
+        'unlocked': true,
+      };
+      tx.set(docRef, data, SetOptions(merge: true));
+    });
+  }
+
+  // ========================================================================
+  //     ⏱️ 클리어 시간 저장
+  // ========================================================================
+  /// 스테이지 별 최고 클리어 타임 저장
+  Future<void> _saveClearTime(String stageId, int seconds) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final db = FirebaseFirestore.instance;
+    final docRef = db.collection('stage_progress').doc(uid);
+    await db.runTransaction((tx) async {
+      final docSnap = await tx.get(docRef);
+      Map<String, dynamic> data = {};
+      if (docSnap.exists) {
+        data = Map<String, dynamic>.from(docSnap.data() ?? {});
+      }
+      final prev = (data[stageId]?['best_time'] as int?) ?? 9999999;
+      if (seconds < prev) {
+        data[stageId] = {
+          ...(data[stageId] ?? {}),
+          'best_time': seconds,
+        };
+        tx.set(docRef, data, SetOptions(merge: true));
+      }
+    });
+  }
+
+  // ========================================================================
+  //     🎉 클리어 다이얼로그 표시
+  // ========================================================================
+  /// 스테이지 클리어 시 보상 안내 다이얼로그 표시
+  Future<void> _showClearDialog(StageModel stage, int gold, int gem, int exp) async {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    // 다음 스테이지 경로 계산
+    String? nextStagePath;
+    try {
+      final raw = await rootBundle.loadString('assets/game/data/index.json');
+      final List<dynamic> stageList = json.decode(raw);
+      int idx = stageList.indexWhere((e) => e['id'] == stage.id);
+      if (idx != -1 && idx + 1 < stageList.length) {
+        final nextStage = stageList[idx + 1];
+        // index.json 구조에 따라 file_path 사용
+        nextStagePath = nextStage['file_path'];
+      }
+    } catch (e) {
+      debugPrint("⚠️ Failed to find next stage: $e");
+    }
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('${stage.name} 클리어!'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('골드: $gold'),
+              Text('젬: $gem'),
+              Text('경험치: $exp'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('닫기'),
+            ),
+            if (nextStagePath != null)
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                  await loadStage(nextStagePath!, context);
+                },
+                child: const Text('다음 스테이지'),
+              ),
+          ],
+        );
+      },
+    );
+  }
+  // ========================================================================
+  //     🔁 스테이지 재시작
+  // ========================================================================
+  Future<void> restartStage(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userProvider = context.read<UserProvider>();
+    final energy = userProvider.user?.energy ?? 0;
+
+    if (energy <= 0) {
+      debugPrint("⚠️ 에너지가 부족합니다. 충전 후 이용해주세요.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("에너지가 부족합니다. 충전 후 이용해주세요.")),
+      );
+      return;
+    }
+
+    // ✅ 에너지 차감
+    await userProvider.consumeEnergy(1);
+
+    // ✅ 동일 스테이지 재시작
+    disposeTimer();
+    if (_lastStagePath != null) {
+      await loadStage(_lastStagePath!, context);
+    } else {
+      debugPrint("⚠️ _lastStagePath is null — cannot restart stage");
+    }
   }
 }

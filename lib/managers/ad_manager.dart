@@ -30,6 +30,17 @@ class AdManager {
   /// 배너 위젯 노출
   Widget bannerWidget() => AdBannerService.bannerWidget();
 
+  /// 게임 배너 광고 로드
+  Future<void> loadGameBannerAd() async {
+    await AdBannerService.loadGameBannerAd(
+      onLoaded: () => debugPrint("✅ 게임 배너 로드 완료"),
+      onFailed: (error) => debugPrint("❌ 게임 배너 로드 실패: $error"),
+    );
+  }
+
+  /// 게임 배너 위젯 노출
+  Widget gameBannerWidget() => AdBannerService.gameBannerWidget();
+
   /// 리워드 광고 실행
   void showRewardedAd({
     required Function onReward,
@@ -64,6 +75,7 @@ class AdManager {
   /// 광고 리소스 해제
   void dispose() {
     AdBannerService.dispose();
+    AdBannerService.disposeGameBanner();
     AdRewardedService.dispose();
     debugPrint("🧹 모든 광고 리소스 해제");
   }

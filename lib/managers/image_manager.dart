@@ -176,4 +176,21 @@ class ImageManager {
   Image getDialogBackground(DialogType type, {BoxFit fit = BoxFit.cover}) {
     return Image.asset(type.assetPath, fit: fit);
   }
+
+  /// 장애물 이미지 리소스 모음
+  /// - 게임 내 장애물 오브젝트 (돌, 나무, 상자 등)
+  /// - 추후 GameEngine 또는 ObstacleFactory에서 참조
+  static const obstaclePaths = {
+    'rock': 'assets/images/obstacles/obstacle_rock.png',
+    'bush': 'assets/images/obstacles/obstacle_bush.png',
+    'tree': 'assets/images/obstacles/obstacle_tree.png',
+    'box': 'assets/images/obstacles/obstacle_box.png',
+    'ice': 'assets/images/obstacles/obstacle_ice.png',
+    'crystal': 'assets/images/obstacles/obstacle_crystal.png',
+    'stone': 'assets/images/obstacles/obstacle_stone.png',
+    'sword': 'assets/images/obstacles/obstacle_sword.png',
+  };
+
+  /// 모든 장애물 이미지 경로 목록
+  List<String> get allObstacleImages => obstaclePaths.values.toList();
 }

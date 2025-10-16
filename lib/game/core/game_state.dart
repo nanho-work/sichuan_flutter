@@ -10,6 +10,7 @@ class GameState {
 
   Tile? selectedA;
   Tile? selectedB;
+  List<(int, int)>? currentPath;
 
   GameState({
     required this.stage,
@@ -19,6 +20,7 @@ class GameState {
     this.failed = false,
     this.selectedA,
     this.selectedB,
+    this.currentPath,
   });
 
   int get layerCount {

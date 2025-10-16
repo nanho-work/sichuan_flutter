@@ -45,7 +45,28 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<GameProvider>().state;
+    final gameProvider = context.watch<GameProvider>();
+    final state = gameProvider.state;
+    final bgImage = gameProvider.backgroundImage;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (state?.failed == true) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => GameOverDialog(
+            onRetry: () {
+              Navigator.of(context).pop(); // 다이얼로그 닫기
+              _gameProvider.restartStage(context); // 스테이지 재시작
+            },
+            onHome: () {
+              Navigator.of(context).pop(); // 다이얼로그 닫기
+              Navigator.of(context).pop(); // 홈 화면으로 복귀
+            },
+          ),
+        );
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (state?.cleared == true) {
@@ -53,15 +74,14 @@ class _GameScreenState extends State<GameScreen> {
           context: context,
           barrierDismissible: false,
           builder: (_) => GameClearDialog(
-            onClose: () => Navigator.of(context).pop(),
-          ),
-        );
-      } else if (state?.failed == true) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => GameOverDialog(
-            onClose: () => Navigator.of(context).pop(),
+            onClose: () {
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(context).pop(); // Return to home (optional)
+            },
+            onNextStage: () {
+              Navigator.of(context).pop(); // Close dialog
+              _gameProvider.loadStage('assets/stages/next_stage.json', context); // Example next stage path
+            },
           ),
         );
       }
@@ -69,14 +89,29 @@ class _GameScreenState extends State<GameScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: const [
-            GameBar(),
-            Expanded(child: GameBoard()),
-            GameNavigation(),
-          ],
-        ),
+      body: Stack(
+        children: [
+          // ✅ 전체 배경 이미지 (유저 착용한 배경 스킨)
+          if (bgImage != null && bgImage.isNotEmpty)
+            Positioned.fill(
+              child: Image.asset(
+                bgImage,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+          // ✅ 게임 UI
+          SafeArea(
+            child: Column(
+              children: const [
+                GameBar(),
+                // The GameBoard widget will be modified to wrap each tile in a Container with margin/padding and border.
+                Expanded(child: GameBoard()),
+                GameNavigation(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

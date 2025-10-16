@@ -38,7 +38,7 @@ class InventoryCharacterView extends StatelessWidget {
           (i) => i.itemId == item.id,
           orElse: () => UserItemModel(
             uid: '',
-            itemId: item.id,
+            itemId: '',
             category: item.category.value,
             equipped: false,
             source: 'shop',
@@ -47,7 +47,7 @@ class InventoryCharacterView extends StatelessWidget {
           ),
         );
 
-        final owned = ownedItem.itemId.isNotEmpty;
+        final owned = inventory.any((i) => i.itemId == item.id);
         final isEquipped = ownedItem.equipped;
 
         return GestureDetector(

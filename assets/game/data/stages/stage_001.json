@@ -1,5 +1,5 @@
 {
-  "id": "stage_005",
+  "id": "stage_001",
   "name": "왕관의 문턱",
   "difficulty": "hard",
   "rows": 8,
@@ -24,21 +24,25 @@
       { "x": 2, "y": 2, "layer": 1 },
       { "x": 3, "y": 2, "layer": 1 },
       { "x": 4, "y": 2, "layer": 1 },
+
       { "x": 1, "y": 3, "layer": 1 },
       { "x": 4, "y": 3, "layer": 1 },
+
       { "x": 1, "y": 4, "layer": 1 },
-      { "x": 4, "y": 4, "layer": 1 },
-      { "x": 1, "y": 5, "layer": 1 },
-      { "x": 2, "y": 3, "layer": 2 },
       { "x": 3, "y": 4, "layer": 2 },
+      { "x": 4, "y": 4, "layer": 2 },
+      { "x": 1, "y": 5, "layer": 2 },
+      { "x": 2, "y": 3, "layer": 2 },
       { "x": 2, "y": 4, "layer": 2 }
     ]
   },
 
   "obstacles": {
     "data": [
-      { "x": 3, "y": 3, "type": "ice", "durability": 3 },
-      { "x": 2, "y": 4, "type": "stone" }
+      { "x": 0, "y": 1, "type": "rock" },
+      { "x": 3, "y": 1, "type": "bush" },
+      { "x": 5, "y": 2, "type": "tree" },
+      { "x": 0, "y": 3, "type": "box" }
     ]
   },
 

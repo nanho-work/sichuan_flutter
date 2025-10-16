@@ -59,6 +59,7 @@ flutter:
     - assets/images/backgrounds/
     - assets/images/dialogs/
     - assets/images/stages/
+    - assets/images/obstacles/
     - assets/data/items_characters.json
     - assets/data/items_blocks.json
     - assets/data/items_backgrounds.json

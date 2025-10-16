@@ -22,6 +22,10 @@ class UserModel {
   final DateTime? adEnergyDate;
   final ItemEffects? setEffects;
 
+  /// ✅ 새로 추가된 필드 (optional)
+  /// Firestore에 없으면 기본값 {} 으로 안전하게 동작
+  final Map<String, dynamic> stageProgress;
+
   UserModel({
     required this.uid,
     required this.nickname,
@@ -41,6 +45,7 @@ class UserModel {
     this.adEnergyCount = 0,
     this.adEnergyDate,
     this.setEffects,
+    this.stageProgress = const {},
   });
 
   factory UserModel.fromDoc(DocumentSnapshot doc) {
@@ -56,7 +61,8 @@ class UserModel {
       energyMax: data['energy_max'] ?? 7,
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastLogin: (data['last_login'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      energyLastRefill: (data['energy_last_refill'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      energyLastRefill:
+          (data['energy_last_refill'] as Timestamp?)?.toDate() ?? DateTime.now(),
       hints: data['hints'] ?? 0,
       bombs: data['bombs'] ?? 0,
       shuffle: data['shuffle'] ?? 0,
@@ -65,7 +71,12 @@ class UserModel {
       adEnergyDate: (data['ad_energy_date'] is Timestamp)
           ? (data['ad_energy_date'] as Timestamp).toDate()
           : null,
-      setEffects: data['set_effects'] != null ? ItemEffects.fromMap(data['set_effects'] as Map<String, dynamic>) : null,
+      setEffects: data['set_effects'] != null
+          ? ItemEffects.fromMap(
+              data['set_effects'] as Map<String, dynamic>,
+            )
+          : null,
+      stageProgress: Map<String, dynamic>.from(data['stage_progress'] ?? const {}),
     );
   }
 
@@ -96,7 +107,10 @@ class UserModel {
       adEnergyDate: (data['ad_energy_date'] is Timestamp)
           ? (data['ad_energy_date'] as Timestamp).toDate()
           : null,
-      setEffects: data['set_effects'] != null ? ItemEffects.fromMap(data['set_effects'] as Map<String, dynamic>) : null,
+      setEffects: data['set_effects'] != null
+          ? ItemEffects.fromMap(data['set_effects'] as Map<String, dynamic>)
+          : null,
+      stageProgress: Map<String, dynamic>.from(data['stage_progress'] ?? const {}),
     );
   }
 
@@ -110,18 +124,23 @@ class UserModel {
       'gems': gems,
       'energy': energy,
       'energy_max': energyMax,
-      'created_at': createdAt.toIso8601String(),
-      'last_login': lastLogin.toIso8601String(),
-      'energy_last_refill': energyLastRefill.toIso8601String(),
+      // 🔁 Store DateTime as ISO8601 string
+      'created_at': Timestamp.fromDate(createdAt),
+      'last_login': Timestamp.fromDate(lastLogin),
+      'energy_last_refill': Timestamp.fromDate(energyLastRefill),
       'hints': hints,
       'bombs': bombs,
       'shuffle': shuffle,
       'current_stage': currentStage,
       'ad_energy_count': adEnergyCount,
+      // 🔁 Optional date as ISO8601 string or null
       'ad_energy_date': adEnergyDate?.toIso8601String(),
     };
     if (setEffects != null) {
       map['set_effects'] = setEffects!.toMap();
+    }
+    if (stageProgress.isNotEmpty) {
+      map['stage_progress'] = stageProgress;
     }
     return map;
   }
@@ -132,6 +151,7 @@ class UserModel {
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
     return UserModel.fromMap(data);
   }
+
   UserModel copyWith(Map<String, dynamic> changes) {
     return UserModel(
       uid: changes['uid'] ?? uid,
@@ -152,13 +172,31 @@ class UserModel {
       adEnergyCount: changes['ad_energy_count'] ?? adEnergyCount,
       adEnergyDate: changes['ad_energy_date'] ?? adEnergyDate,
       setEffects: changes['set_effects'] ?? setEffects,
+      stageProgress: changes['stage_progress'] ?? stageProgress,
     );
   }
-    bool get adLimitReached {
-      if (adEnergyDate == null) return false;
-      final now = DateTime.now();
-      final d = adEnergyDate!;
-      final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
-      return isToday && adEnergyCount >= 3;
-    }
+
+  bool get adLimitReached {
+    if (adEnergyDate == null) return false;
+    final now = DateTime.now();
+    final d = adEnergyDate!;
+    final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
+    return isToday && adEnergyCount >= 3;
+  }
+
+  // ---------- 진행도 헬퍼 ----------
+  bool isStageUnlocked(String stageId) {
+    final m = stageProgress[stageId] as Map<String, dynamic>?;
+    return (m?['unlocked'] == true);
+  }
+
+  bool isStageCleared(String stageId) {
+    final m = stageProgress[stageId] as Map<String, dynamic>?;
+    return (m?['cleared'] == true);
+  }
+
+  int bestTime(String stageId) {
+    final m = stageProgress[stageId] as Map<String, dynamic>?;
+    return (m?['best_time'] as int?) ?? 9999999;
+  }
 }

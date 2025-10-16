@@ -9,6 +9,9 @@ class EnergyService {
   /// 자동 충전 처리
   Future<void> autoRecharge(String uid) async {
     final ref = _db.collection('users').doc(uid);
+    int gained = 0;
+    DateTime now = DateTime.now();
+
     await _db.runTransaction((t) async {
       final snapshot = await t.get(ref);
       if (!snapshot.exists) return;
@@ -20,9 +23,9 @@ class EnergyService {
 
       if (currentEnergy >= maxEnergy) return;
 
-      final now = DateTime.now();
+      now = DateTime.now();
       final elapsed = now.difference(lastRefill);
-      final gained = elapsed.inMinutes ~/ refillInterval.inMinutes;
+      gained = elapsed.inMinutes ~/ refillInterval.inMinutes;
 
       if (gained <= 0) return;
 
@@ -33,12 +36,15 @@ class EnergyService {
         'energy': newEnergy,
         'energy_last_refill': newRefillTime,
       });
+    });
 
+    // Add energy transaction outside the transaction to avoid async issues inside transaction
+    if (gained > 0) {
       await ref.collection('energy_transactions').add({
         'type': 'auto_recharge',
         'amount': gained,
         'created_at': now,
       });
-    });
+    }
   }
 }

@@ -456,4 +456,10 @@ extension InventoryProviderCache on InventoryProvider {
       debugPrint("❌ [InventoryProvider._loadInventoryFromCache] 실패: $e");
     }
   }
+
+  Future<void> loadFromCacheIfNeeded() async {
+    if (_inventory.isEmpty) {
+      await _loadInventoryFromCache();
+    }
+  }
 }
