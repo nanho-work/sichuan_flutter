@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
+import '../services/energy_service.dart';
 
 class UserProvider extends ChangeNotifier {
   final _userService = UserService();

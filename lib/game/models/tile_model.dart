@@ -1,7 +1,6 @@
 class Tile {
   final int x;
   final int y;
-  final int layer;
   String type;
   bool cleared;
   String? imagePath;
@@ -12,7 +11,6 @@ class Tile {
   Tile({
     required this.x,
     required this.y,
-    required this.layer,
     this.type = '',
     this.cleared = false,
     this.imagePath,
@@ -25,7 +23,6 @@ class Tile {
     return Tile(
       x: map['x'] ?? 0,
       y: map['y'] ?? 0,
-      layer: map['layer'] ?? 0,
       type: map['type'] ?? '',
       cleared: map['cleared'] ?? false,
       imagePath: map['imagePath'] ?? map['image_path'],
@@ -38,7 +35,6 @@ class Tile {
   Map<String, dynamic> toMap() => {
         'x': x,
         'y': y,
-        'layer': layer,
         'type': type,
         'cleared': cleared,
         'image_path': imagePath,
@@ -58,7 +54,6 @@ class Tile {
     return Tile(
       x: x,
       y: y,
-      layer: layer,
       type: type ?? this.type,
       cleared: cleared ?? this.cleared,
       imagePath: imagePath ?? this.imagePath,
@@ -70,5 +65,5 @@ class Tile {
 
   @override
   String toString() =>
-      'Tile($x,$y,L$layer,type=$type,cleared=$cleared,blockItemId=$blockItemId)';
+      'Tile($x,$y,type=$type,cleared=$cleared,blockItemId=$blockItemId)';
 }

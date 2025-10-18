@@ -19,18 +19,19 @@ class _EnergyHeaderState extends State<EnergyHeader> {
     if (energy >= maxEnergy) return Duration.zero;
     final now = DateTime.now();
     final elapsed = now.difference(lastRefill);
-    final nextRefill = const Duration(minutes: 10) - Duration(
-      minutes: elapsed.inMinutes % 10,
-      seconds: elapsed.inSeconds % 60,
-    );
+    final nextRefill = const Duration(minutes: 10) -
+        Duration(
+          minutes: elapsed.inMinutes % 10,
+          seconds: elapsed.inSeconds % 60,
+        );
     return nextRefill;
   }
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {});
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {}); // 단순히 남은 시간 표시 갱신만
     });
   }
 
@@ -44,12 +45,13 @@ class _EnergyHeaderState extends State<EnergyHeader> {
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
     final user = userProvider.user;
+    if (user == null) return const SizedBox.shrink();
 
-    if (user == null) {
-      return const SizedBox.shrink();
-    }
-
-    final remaining = _calculateRemaining(user.energyLastRefill, user.energy, user.energyMax);
+    final remaining = _calculateRemaining(
+      user.energyLastRefill,
+      user.energy,
+      user.energyMax,
+    );
     final minutes = remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
 
@@ -84,7 +86,7 @@ class _EnergyHeaderState extends State<EnergyHeader> {
               context: context,
               builder: (context) => const EnergyDialog(),
             );
-            await userProvider.loadUser();
+            await userProvider.loadUser(); // 다이얼로그 닫힌 뒤 최신화
           },
           child: const Icon(Icons.add_circle_outline, color: Colors.white70, size: 20),
         ),

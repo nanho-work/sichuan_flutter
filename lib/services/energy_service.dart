@@ -3,14 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class EnergyService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // 10분마다 1회 자동 충전
   static const Duration refillInterval = Duration(minutes: 10);
 
-  /// 자동 충전 처리
   Future<void> autoRecharge(String uid) async {
-    final ref = _db.collection('users').doc(uid);
     int gained = 0;
     DateTime now = DateTime.now();
+    final ref = _db.collection('users').doc(uid);
 
     await _db.runTransaction((t) async {
       final snapshot = await t.get(ref);
@@ -19,11 +17,11 @@ class EnergyService {
       final data = snapshot.data()!;
       final int currentEnergy = data['energy'] ?? 0;
       final int maxEnergy = data['energy_max'] ?? 0;
-      final DateTime lastRefill = (data['energy_last_refill'] as Timestamp).toDate();
+      final DateTime lastRefill =
+          (data['energy_last_refill'] as Timestamp).toDate();
 
       if (currentEnergy >= maxEnergy) return;
 
-      now = DateTime.now();
       final elapsed = now.difference(lastRefill);
       gained = elapsed.inMinutes ~/ refillInterval.inMinutes;
 
@@ -38,7 +36,6 @@ class EnergyService {
       });
     });
 
-    // Add energy transaction outside the transaction to avoid async issues inside transaction
     if (gained > 0) {
       await ref.collection('energy_transactions').add({
         'type': 'auto_recharge',

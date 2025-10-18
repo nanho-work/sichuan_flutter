@@ -8,7 +8,7 @@ const firestore = getFirestore();
 
 export const autoEnergyRecharge = onSchedule(
   {
-    schedule: "every 1 hours",
+    schedule: "every 10 minutes",
     timeZone: "Asia/Seoul",
   },
   async (event) => {

@@ -37,6 +37,8 @@ class GameProvider extends ChangeNotifier {
   final GameEngine _engine = GameEngine();
   Timer? _timer;
 
+  MatchResultType? lastResultType;
+
   List<List<Tile?>>? _projectedLayer;
   List<List<Tile?>>? get projectedLayer => _projectedLayer;
 
@@ -51,6 +53,10 @@ class GameProvider extends ChangeNotifier {
   GameEngine get engine => _engine;
   GameState? get state => _engine.state;
 
+  // 🔒 타일 입력 잠금 상태
+  bool _isLocked = false;
+  bool get isLocked => _isLocked;
+
   void _buildProjectedLayer() {
     final st = _engine.state;
     if (st == null) {
@@ -58,28 +64,21 @@ class GameProvider extends ChangeNotifier {
       _projectedLayer = null;
       return;
     }
-    final layers = st.layersByRC;
-    if (layers.isEmpty) {
-      debugPrint("⚠️ layersByRC is empty; cannot build projected layer");
+    final board = st.board;
+    if (board.isEmpty) {
+      debugPrint("⚠️ board is empty; cannot build projected layer");
       _projectedLayer = null;
       return;
     }
-    final height = layers[0].length;
-    final width = layers[0][0].length;
+    final height = board.length;
+    final width = board[0].length;
     List<List<Tile?>> pLayer = List.generate(height, (_) => List<Tile?>.filled(width, null));
 
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        Tile? selectedTile;
-        for (int layerIndex = layers.length - 1; layerIndex >= 0; layerIndex--) {
-          final tile = layers[layerIndex][y][x];
-          if (tile != null && !tile.cleared) {
-            selectedTile = tile;
-            break;
-          }
-        }
-        pLayer[y][x] = selectedTile;
-        debugPrint("ProjectedLayer[$y][$x] = ${selectedTile != null ? 'Tile(x=${selectedTile.x}, y=${selectedTile.y}, cleared=${selectedTile.cleared})' : 'null'}");
+        final tile = board[y][x];
+        pLayer[y][x] = (tile != null && !tile.cleared) ? tile : null;
+        debugPrint("ProjectedLayer[$y][$x] = ${pLayer[y][x] != null ? 'Tile(x=${pLayer[y][x]!.x}, y=${pLayer[y][x]!.y}, cleared=${pLayer[y][x]!.cleared})' : 'null'}");
       }
     }
     _projectedLayer = pLayer;
@@ -189,18 +188,36 @@ class GameProvider extends ChangeNotifier {
   // ========================================================================
 
   /// 타일 클릭
-  void selectTile(Tile tile) {
-    final changed = _engine.select(tile);
-    if (changed) {
-      // 클리어/실패 판정 후 종료 처리
-      if (_engine.state.cleared || _engine.state.failed) {
-        // ========================================================================
-        //     💀 게임 종료 처리
-        // ========================================================================
+  MatchResult selectTile(Tile tile) {
+    final result = _engine.select(tile); // MatchResult 객체 리턴
+    lastResultType = result.type;
+    switch (result.type) {
+      case MatchResultType.matched:
+        // 성공 시: UI가 콤보, 효과음 등을 처리할 수 있도록 상태 반영
+        break;
+      case MatchResultType.wrong:
+        // 실패 시: 콤보 초기화나 피드백을 위한 처리 가능
+        _isLocked = true;
+        notifyListeners();
+
+        // 2초 동안 입력 잠금 + 틀린 피드백 표시
+        Future.delayed(const Duration(seconds: 2), () {
+          _engine.clearSelections(); // 선택 해제
+          _isLocked = false;
+          lastResultType = null; // 깜박임 상태 초기화
+          notifyListeners();
+        });
+        break;
+      case MatchResultType.cleared:
+      case MatchResultType.failed:
+        // 클리어 또는 실패 처리
         _onGameEnd();
-      }
-      notifyListeners();
+        break;
+      default:
+        break;
     }
+    notifyListeners();
+    return result;
   }
 
   // ========================================================================
@@ -340,11 +357,9 @@ class GameProvider extends ChangeNotifier {
     // 예시: 남은 시간 * 10 + (총 타일 수 - 제거 못한 타일 수) * 5
     int left = st.timeLeft;
     int remain = 0;
-    for (final layer in st.layersByRC) {
-      for (final row in layer) {
-        for (final t in row) {
-          if (t != null && !t.cleared) remain++;
-        }
+    for (final row in st.board) {
+      for (final t in row) {
+        if (t != null && !t.cleared) remain++;
       }
     }
     final total = st.stage.tiles.length;

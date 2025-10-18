@@ -60,8 +60,7 @@ class _GameScreenState extends State<GameScreen> {
               _gameProvider.restartStage(context); // 스테이지 재시작
             },
             onHome: () {
-              Navigator.of(context).pop(); // 다이얼로그 닫기
-              Navigator.of(context).pop(); // 홈 화면으로 복귀
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           ),
         );
@@ -75,8 +74,7 @@ class _GameScreenState extends State<GameScreen> {
           barrierDismissible: false,
           builder: (_) => GameClearDialog(
             onClose: () {
-              Navigator.of(context).pop(); // Close dialog
-              Navigator.of(context).pop(); // Return to home (optional)
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
             onNextStage: () {
               Navigator.of(context).pop(); // Close dialog
@@ -103,11 +101,19 @@ class _GameScreenState extends State<GameScreen> {
           // ✅ 게임 UI
           SafeArea(
             child: Column(
-              children: const [
-                GameBar(),
+              children: [
+                const GameBar(),
                 // The GameBoard widget will be modified to wrap each tile in a Container with margin/padding and border.
-                Expanded(child: GameBoard()),
-                GameNavigation(),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent, // 살짝 배경 강조 (선택사항)
+                    ),
+                    child: const GameBoard(),
+                  ),
+                ),
+                const GameNavigation(),
               ],
             ),
           ),

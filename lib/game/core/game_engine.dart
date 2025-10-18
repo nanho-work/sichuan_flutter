@@ -5,6 +5,15 @@ import '../models/tile_model.dart';
 import 'game_state.dart';
 import 'pathfinder.dart';
 
+enum MatchResultType { none, selected, deselected, wrong, matched, cleared, failed }
+
+class MatchResult {
+  final MatchResultType type;
+  final Tile? a;
+  final Tile? b;
+  const MatchResult(this.type, {this.a, this.b});
+}
+
 class GameEngine {
   late GameState state;
   late Pathfinder _finder;
@@ -18,30 +27,24 @@ class GameEngine {
     List<String> equippedBlockImages, {
     String? backgroundImage,
   }) async {
-    final maxLayer = stage.tiles.fold<int>(1, (m, t) => max(m, t.layer));
-
     debugPrint("🧩 Initializing GameEngine for stage: id=${stage.id}, name=${stage.name}");
-    debugPrint("🧩 Stage dimensions: layers=$maxLayer, rows=${stage.rows}, cols=${stage.cols}");
+    debugPrint("🧩 Stage dimensions: rows=${stage.rows}, cols=${stage.cols}");
 
-    // [layer][row][col]
-    final layers = List.generate(
-      maxLayer,
-      (_) => List.generate(
-        stage.rows,
-        (_) => List<Tile?>.filled(stage.cols, null, growable: false),
-        growable: false,
-      ),
+    // [row][col]
+    final grid = List.generate(
+      stage.rows,
+      (_) => List<Tile?>.filled(stage.cols, null, growable: false),
       growable: false,
     );
 
     // 타일 배치
     for (final t in stage.tiles) {
-      layers[t.layer - 1][t.y][t.x] = t;
+      grid[t.y][t.x] = t;
     }
 
     state = GameState(
       stage: stage,
-      layersByRC: layers,
+      board: grid,
       timeLeft: stage.timeLimit,
     );
 
@@ -58,11 +61,8 @@ class GameEngine {
         );
         if (hasObstacle) return 'obstacle';
 
-        // 최상단 타일 가져오기
-        for (int l = state.layersByRC.length - 1; l >= 0; l--) {
-          final t = state.layersByRC[l][y][x];
-          if (t != null && !t.cleared) return t;
-        }
+        final t = state.board[y][x];
+        if (t != null && !t.cleared) return t;
         return null;
       }),
     );
@@ -88,16 +88,12 @@ class GameEngine {
         );
         if (hasObstacle) return true;
 
-        // 현재 레이어에서 미클리어 타일이 존재하면 막힘
-        for (int l = state.layersByRC.length - 1; l >= 0; l--) {
-          final t = state.layersByRC[l][y][x];
-          if (t != null && !t.cleared) {
-            return true;
-          }
+        final t = state.board[y][x];
+        if (t != null && !t.cleared) {
+          return true;
         }
         return false; // 비어있으면 통로
       },
-      layerGetter: (x, y) => 0, // 단일 레이어 기반
     );
 
     refreshTopmostTiles();
@@ -108,15 +104,19 @@ class GameEngine {
   // Refresh the cache of topmost tiles
   void refreshTopmostTiles() {
     _topmostCache.clear();
-    for (final layer in state.layersByRC) {
-      for (final row in layer) {
-        for (final t in row) {
-          if (t != null && !t.cleared && isTopmostTile(t)) {
-            _topmostCache.add(t);
-          }
+    for (final row in state.board) {
+      for (final t in row) {
+        if (t != null && !t.cleared) {
+          _topmostCache.add(t);
         }
       }
     }
+  }
+
+  // Public helper for external controllers (e.g., Provider) to clear current selections
+  void clearSelections() {
+    state.selectedA = null;
+    state.selectedB = null;
   }
 
   // Wrapper to check if tile is topmost using cache
@@ -126,29 +126,15 @@ class GameEngine {
 
   // ✅ 해당 타일이 최상단(위에 다른 블록이 없음)인지 판정
   bool isTopmostTile(Tile t) {
-    for (int l = t.layer; l < state.layersByRC.length; l++) {
-      final above = state.layersByRC[l][t.y][t.x];
-      if (above != null && !above.cleared && !identical(above, t)) {
-        if (t.x == 0 && t.y == 0) {
-          debugPrint("⚠️ isTopmostTile: Tile at (${t.x},${t.y}) layer ${t.layer} is NOT topmost due to tile at layer ${l+1}");
-        }
-        return false;
-      }
-    }
-    if (t.x == 0 && t.y == 0) {
-      debugPrint("✅ isTopmostTile: Tile at (${t.x},${t.y}) layer ${t.layer} is topmost");
-    }
     return true;
   }
 
   // ✅ 착용 블럭 기반 짝 랜덤 지정 + 절대경로 이미지 적용
   void _assignPairs(List<String> equippedBlockImages) {
     final tiles = <Tile>[];
-    for (final layer in state.layersByRC) {
-      for (final row in layer) {
-        for (final t in row) {
-          if (t != null && !t.cleared) tiles.add(t);
-        }
+    for (final row in state.board) {
+      for (final t in row) {
+        if (t != null && !t.cleared) tiles.add(t);
       }
     }
 
@@ -189,40 +175,39 @@ class GameEngine {
   }
 
   // ✅ 선택 로직
-  bool select(Tile t) {
+  MatchResult select(Tile t) {
     // 🚫 이미 cleared 되었거나 위에 블럭/장애물 있으면 무시
-    if (t.cleared || !isTopmost(t)) return false;
+    if (t.cleared || !isTopmost(t)) return const MatchResult(MatchResultType.none);
 
     // 🚫 장애물 위의 타일은 선택 불가
     final hasObs = state.stage.obstacles.any(
       (o) => o.x == t.x && o.y == t.y && o.durability > 0,
     );
-    if (hasObs) return false;
+    if (hasObs) return const MatchResult(MatchResultType.none);
 
-    debugPrint("🎯 select: Tile selected at (${t.x},${t.y}), layer ${t.layer}, type '${t.type}'");
+    debugPrint("🎯 select: Tile selected at (${t.x},${t.y}), type '${t.type}'");
     
-    debugPrint("🎯 select: Tile selected at (${t.x},${t.y}), layer ${t.layer}, type '${t.type}'");
     // 🚫 Same-tile double tap → toggle/deselect
     if (state.selectedA != null && identical(state.selectedA, t)) {
       debugPrint("⚠️ select: Same tile tapped twice; deselecting A at (${t.x},${t.y})");
       state.selectedA = null;
       state.selectedB = null;
-      return true;
+      return MatchResult(MatchResultType.deselected, a: t);
     }
     if (t.cleared || !isTopmost(t)) {
       debugPrint("⚠️ select: Tile at (${t.x},${t.y}) cannot be selected (cleared: ${t.cleared}, topmost: ${isTopmost(t)})");
-      return false;
+      return const MatchResult(MatchResultType.none);
     }
 
     if (state.selectedA == null) {
       state.selectedA = t;
       debugPrint("🎯 select: selectedA set to tile at (${t.x},${t.y})");
-      return true;
+      return MatchResult(MatchResultType.selected, a: t);
     } else if (state.selectedB == null) {
       // 🚫 Prevent selecting the exact same tile as B
       if (identical(state.selectedA, t)) {
         debugPrint("⚠️ select: Attempted to set selectedB to the same tile as selectedA; ignoring");
-        return false;
+        return const MatchResult(MatchResultType.none);
       }
       state.selectedB = t;
       debugPrint("🎯 select: selectedB set to tile at (${t.x},${t.y}), attempting to clear");
@@ -231,28 +216,28 @@ class GameEngine {
       state.selectedA = t;
       state.selectedB = null;
       debugPrint("🎯 select: Reset selections, selectedA set to tile at (${t.x},${t.y}), selectedB cleared");
-      return true;
+      return MatchResult(MatchResultType.selected, a: t);
     }
   }
 
-  bool tryClearSelected() {
+  MatchResult tryClearSelected() {
     final a = state.selectedA, b = state.selectedB;
     if (a == null || b == null) {
       debugPrint("❌ tryClearSelected: One or both selected tiles are null");
-      return false;
+      return const MatchResult(MatchResultType.none);
     }
     // 🚫 Same tile selected for A and B
     if (identical(a, b)) {
       debugPrint("❌ tryClearSelected: A and B are the same tile (${a.x},${a.y}); cannot clear");
       // Reset to allow choosing a proper second tile
       state.selectedB = null;
-      return false;
+      return MatchResult(MatchResultType.wrong, a: a, b: b);
     }
     debugPrint("🎯 tryClearSelected: Attempting to clear selected tiles:");
     debugPrint(
-        "  🅰️ Tile A → (x:${a.x}, y:${a.y}, layer:${a.layer}, type:'${a.type}', cleared:${a.cleared}, imagePath:'${a.imagePath}')");
+        "  🅰️ Tile A → (x:${a.x}, y:${a.y}, type:'${a.type}', cleared:${a.cleared}, imagePath:'${a.imagePath}')");
     debugPrint(
-        "  🅱️ Tile B → (x:${b.x}, y:${b.y}, layer:${b.layer}, type:'${b.type}', cleared:${b.cleared}, imagePath:'${b.imagePath}')");
+        "  🅱️ Tile B → (x:${b.x}, y:${b.y}, type:'${b.type}', cleared:${b.cleared}, imagePath:'${b.imagePath}')");
 
     final typeMatch = (a.type.isNotEmpty && a.type == b.type);
     final imageMatch = (a.imagePath != null && a.imagePath == b.imagePath);
@@ -261,9 +246,8 @@ class GameEngine {
       debugPrint("❌ tryClearSelected: Not matched. "
           "typeMatch=$typeMatch (A:'${a.type}', B:'${b.type}'), "
           "imageMatch=$imageMatch (A:'${a.imagePath}', B:'${b.imagePath}')");
-      state.selectedA = b;
-      state.selectedB = null;
-      return false;
+      // Keep A/B selection so UI can show wrong feedback; Provider will clear after delay
+      return MatchResult(MatchResultType.wrong, a: a, b: b);
     } else {
       debugPrint("✅ tryClearSelected: Match OK. "
           "typeMatch=$typeMatch, imageMatch=$imageMatch, "
@@ -284,33 +268,29 @@ class GameEngine {
           "✅ tryClearSelected: Cleared tiles at (A: ${a.x},${a.y}) and (B: ${b.x},${b.y}) 🧩🧩");
       // Count remaining tiles
       int remaining = 0;
-      for (final layer in state.layersByRC) {
-        for (final row in layer) {
-          for (final t in row) {
-            if (t != null && !t.cleared) remaining++;
-          }
+      for (final row in state.board) {
+        for (final t in row) {
+          if (t != null && !t.cleared) remaining++;
         }
       }
       debugPrint("🎯 Tiles remaining: $remaining");
       if (_isAllCleared()) {
         state.cleared = true;
         debugPrint("🎉 tryClearSelected: All tiles cleared, game cleared! 🎉");
+        return MatchResult(MatchResultType.cleared, a: a, b: b);
       }
-      return true;
+      return MatchResult(MatchResultType.matched, a: a, b: b);
     } else {
       debugPrint("❌ tryClearSelected: Pathfinder cannot connect these tiles. Clear failed.");
-      state.selectedA = b;
-      state.selectedB = null;
-      return false;
+      // Keep A/B selection so UI can show wrong feedback; Provider will clear after delay
+      return MatchResult(MatchResultType.wrong, a: a, b: b);
     }
   }
 
   bool _isAllCleared() {
-    for (final layer in state.layersByRC) {
-      for (final row in layer) {
-        for (final t in row) {
-          if (t != null && !t.cleared) return false;
-        }
+    for (final row in state.board) {
+      for (final t in row) {
+        if (t != null && !t.cleared) return false;
       }
     }
     debugPrint("✅ _isAllCleared: Board fully cleared!");

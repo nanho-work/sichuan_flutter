@@ -1,5 +1,3 @@
-// lib/game/ui/components/game_board.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/game_provider.dart';
@@ -73,31 +71,33 @@ class _GameBoardState extends State<GameBoard>
                   ),
 
                 // ✅ 2. 블럭
-                for (int l = 0; l < state.layersByRC.length; l++)
-                  for (int y = 0; y < rows; y++)
-                    for (int x = 0; x < cols; x++)
-                      if (state.layersByRC[l][y][x] != null &&
-                          !state.layersByRC[l][y][x]!.cleared)
-                        Positioned(
-                          top: y * cellHeight - (l * 7),
-                          left: x * cellWidth - (l * 7),
-                          width: cellWidth,
-                          height: cellHeight,
-                          child: Builder(
-                            builder: (context) {
-                              final tile = state.layersByRC[l][y][x]!;
-                              final selected =
-                                  state.selectedA?.x == x &&
-                                      state.selectedA?.y == y &&
-                                      state.selectedA == tile;
-                              return GestureDetector(
-                                onTap: () =>
-                                    context.read<GameProvider>().selectTile(tile),
-                                child: GameTile(tile: tile, selected: selected),
-                              );
-                            },
-                          ),
+                for (int y = 0; y < rows; y++)
+                  for (int x = 0; x < cols; x++)
+                    if (state.board[y][x] != null &&
+                        !state.board[y][x]!.cleared)
+                      Positioned(
+                        top: y * cellHeight,
+                        left: x * cellWidth,
+                        width: cellWidth,
+                        height: cellHeight,
+                        child: Builder(
+                          builder: (context) {
+                            final tile = state.board[y][x]!;
+                            final selected =
+                                state.selectedA?.x == x &&
+                                    state.selectedA?.y == y &&
+                                    state.selectedA == tile;
+                            return GestureDetector(
+                              onTap: () {
+                                final gp = context.read<GameProvider>();
+                                if (gp.isLocked) return; // 🔒 잠금 중이면 터치 무시
+                                gp.selectTile(tile);
+                              },
+                              child: GameTile(tile: tile, selected: selected),
+                            );
+                          },
                         ),
+                      ),
 
                 // ✅ 3. 연결선(PathPainter)
                 if (state.currentPath != null)
